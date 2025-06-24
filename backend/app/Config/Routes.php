@@ -82,3 +82,5 @@ $routes->group('agent', ['filter' => 'agent'], function($routes) {
     $routes->get('tickets/(:num)/test', 'TicketController::testRoute/$1'); // Route de test
     $routes->post('tickets/(:num)/take', 'AgentController::takeTicket/$1');
 });
+
+$routes->get('/admin/listeMessageClient', 'AdminController::listeMessageClientPage');

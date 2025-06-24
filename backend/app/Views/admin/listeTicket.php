@@ -39,7 +39,6 @@ $statusColors = [
                                     <th>Groupe</th>
                                     <th>Priorité</th>
                                     <th>Statut</th>
-                                    <th>Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -64,27 +63,6 @@ $statusColors = [
                                             <span class="badge bg-<?= $statusColors[$ticket['statut']] ?? 'secondary' ?>">
                                                 <?= ucfirst(str_replace('_', ' ', $ticket['statut'])) ?>
                                             </span>
-                                        </td>
-                                        <td>
-                                            <?php if ($ticket['statut'] === 'ouvert'): ?>
-                                                <div class="btn-group">
-                                                    <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
-                                                        Assigner
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li>
-                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#assignAgentModal<?= $ticket['id'] ?>">
-                                                                Assigner un agent
-                                                            </a>
-                                                        </li>
-                                                        <li>
-                                                            <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#assignGroupeModal<?= $ticket['id'] ?>">
-                                                                Assigner un groupe
-                                                            </a>
-                                                        </li>
-                                                    </ul>
-                                                </div>
-                                            <?php endif; ?>
                                         </td>
                                     </tr>
 
@@ -128,64 +106,6 @@ $statusColors = [
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Modal pour assigner un agent -->
-                                    <div class="modal fade" id="assignAgentModal<?= $ticket['id'] ?>" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Assigner un agent</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form action="<?= site_url('/admin/tickets/assign-agent/' . $ticket['id']) ?>" method="post">
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label for="agent_id" class="form-label">Sélectionner un agent</label>
-                                                            <select class="form-select" name="agent_id" required>
-                                                                <option value="">Choisir un agent...</option>
-                                                                <?php foreach ($agents as $agent): ?>
-                                                                    <option value="<?= $agent['id'] ?>"><?= $agent['nom'] ?> <?= $agent['prenom'] ?></option>
-                                                                <?php endforeach; ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-primary">Assigner</button>
-                                                    </div>
-                                                </form>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Modal pour assigner un groupe -->
-                                    <div class="modal fade" id="assignGroupeModal<?= $ticket['id'] ?>" tabindex="-1">
-                                        <div class="modal-dialog">
-                                            <div class="modal-content">
-                                                <div class="modal-header">
-                                                    <h5 class="modal-title">Assigner un groupe</h5>
-                                                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                                </div>
-                                                <form action="<?= site_url('/admin/tickets/assign-groupe/' . $ticket['id']) ?>" method="post">
-                                                    <div class="modal-body">
-                                                        <div class="mb-3">
-                                                            <label for="groupe_id" class="form-label">Sélectionner un groupe</label>
-                                                            <select class="form-select" name="groupe_id" required>
-                                                                <option value="">Choisir un groupe...</option>
-                                                                <?php foreach ($groupes as $groupe): ?>
-                                                                    <option value="<?= $groupe['id'] ?>"><?= $groupe['nom'] ?></option>
-                                                                <?php endforeach; ?>
-                                                            </select>
-                                                        </div>
-                                                    </div>
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                                                        <button type="submit" class="btn btn-primary">Assigner</button>
-                                                    </div>
-                                                </form>
                                             </div>
                                         </div>
                                     </div>

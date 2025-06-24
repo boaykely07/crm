@@ -60,6 +60,15 @@ class AdminController extends BaseController
         ]);
     }
 
+    public function listeMessageClientPage()
+    {
+        $messageClientModel = new \App\Models\MessageClientModel();
+        $data['messages'] = $messageClientModel->getMessagesWithClient();
+        return view('admin/admin', [
+            'content' => view('admin/listeMessageClient', $data)
+        ]);
+    }
+
     public function validerBudgetCRM($id)
     {
         $budgetModel = new CRMBudgetModel();
