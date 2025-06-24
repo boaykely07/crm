@@ -136,7 +136,6 @@
                             <i class="fas fa-sign-out-alt me-2"></i>Déconnexion
                         </button>
                     </form>
-                    
                 </ul>
             </div>
 
