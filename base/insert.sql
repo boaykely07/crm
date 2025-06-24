@@ -59,7 +59,7 @@ INSERT INTO stocks (id_produit, quantite)
 SELECT id, 50 FROM produits;
 
 INSERT INTO clients (nom, email, telephone, id_categorie, adresse) VALUES
-('Rakoto Jean', 'rakoto.jean@email.com', '0341234567', 1, 'Analakely, Antananarivo'),
+('tsiory', 'tsioryvahyarabearivony@email.com', '0341234567', 1, 'Analakely, Antananarivo'),
 ('SARL TechPlus', 'contact@techplus.mg', '0331234567', 2, 'Andraharo, Antananarivo'),
 ('InfoStore', 'info@infostore.mg', '0321234567', 3, 'Ankorondrano, Antananarivo'),
 ('Rasoa Marie', 'rasoa.marie@email.com', '0344567890', 1, 'Tsaralalàna, Antananarivo'),

@@ -69,6 +69,17 @@ class AdminController extends BaseController
         ]);
     }
 
+    public function detailMessageClientPage($id)
+    {
+        $messageModel = new \App\Models\MessageClientModel();
+        $message = $messageModel
+            ->select('message_client.*, clients.nom as client_nom')
+            ->join('clients', 'clients.id = message_client.id_client')
+            ->where('message_client.id', $id)
+            ->first();
+        return view('admin/detailMessageClient', ['message' => $message]);
+    }
+
     public function validerBudgetCRM($id)
     {
         $budgetModel = new CRMBudgetModel();

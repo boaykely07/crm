@@ -15,6 +15,7 @@
                                     <th>Message</th>
                                     <th>Date</th>
                                     <th>Ticket lié</th>
+                                    <th>Action</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -31,6 +32,11 @@
                                                 <?php else: ?>
                                                     -
                                                 <?php endif; ?>
+                                            </td>
+                                            <td>
+                                                <a href="<?= site_url('/admin/detailMessageClient/'.$msg['id']) ?>" class="btn btn-info btn-sm">
+                                                    <i class="fas fa-eye"></i> Détail
+                                                </a>
                                             </td>
                                         </tr>
                                     <?php endforeach; ?>
