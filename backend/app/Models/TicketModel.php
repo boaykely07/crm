@@ -14,7 +14,7 @@ class TicketModel extends Model
     ];
 
     protected $validationRules = [
-        'statut' => 'required|in_list[nouveau,en_attente,en_cours,resolu,ferme]'
+        'statut' => 'required|in_list[ouvert,en_cours,resolu,ferme]'
     ];
 
     public function getTicketsWithDetails()

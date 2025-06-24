@@ -1,7 +1,6 @@
 <?php
 $statusColors = [
-    'nouveau' => 'danger',
-    'en_attente' => 'warning',
+    'ouvert' => 'danger',
     'en_cours' => 'info',
     'resolu' => 'success',
     'ferme' => 'secondary'
@@ -67,7 +66,7 @@ $statusColors = [
                                             </span>
                                         </td>
                                         <td>
-                                            <?php if ($ticket['statut'] === 'nouveau'): ?>
+                                            <?php if ($ticket['statut'] === 'ouvert'): ?>
                                                 <div class="btn-group">
                                                     <button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-bs-toggle="dropdown">
                                                         Assigner

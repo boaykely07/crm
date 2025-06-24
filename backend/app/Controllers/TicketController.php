@@ -10,15 +10,14 @@ class TicketController extends BaseController
     protected $ticketModel;
     protected $utilisateurModel;
     protected $groupeModel;
-    protected $validStatuses = ['nouveau', 'en_attente', 'en_cours', 'resolu', 'ferme'];
+    protected $validStatuses = ['ouvert', 'en_cours', 'resolu', 'ferme'];
 
     // Transitions autorisées simplifiées et plus permissives
     protected $allowedTransitions = [
-        'nouveau' => ['en_attente', 'en_cours', 'resolu'],
-        'en_attente' => ['en_cours', 'resolu', 'nouveau'],
-        'en_cours' => ['resolu', 'en_attente', 'ferme'],
+        'ouvert' => ['en_cours', 'resolu'],
+        'en_cours' => ['resolu', 'ferme', 'ouvert'],
         'resolu' => ['ferme', 'en_cours'],
-        'ferme' => ['en_cours', 'resolu']
+        'ferme' => ['en_cours', 'resolu', 'ouvert']
     ];
 
     public function __construct()
