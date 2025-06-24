@@ -66,9 +66,33 @@ class TicketController extends BaseController
             $updateData['id_agent'] = $userId;
         }
         if ($this->ticketModel->update($id, $updateData)) {
+            if ($status === 'resolu') {
+                $this->sendResolutionMailToClient($ticket);
+            }
             return redirect()->to('/agent/mes-tickets')->with('success', 'Statut du ticket mis à jour avec succès.');
         }
         return redirect()->to('/agent/mes-tickets')->with('error', 'Erreur lors de la mise à jour du statut.');
+    }
+
+    protected function sendResolutionMailToClient($ticket)
+    {
+        $clientModel = new \App\Models\ClientsModel();
+        $client = $clientModel->find($ticket['id_client']);
+        if (!$client || empty($client['email'])) {
+            return;
+        }
+        $email = \Config\Services::email();
+        $email->setTo($client['email']);
+        $email->setSubject('Votre ticket #' . $ticket['id'] . ' a été résolu');
+        $email->setMessage(
+            'Bonjour ' . htmlspecialchars($client['nom']) . ",<br><br>" .
+            "Votre ticket <b>#" . $ticket['id'] . "</b> a été marqué comme <b>résolu</b>.<br>" .
+            "Titre : <b>" . htmlspecialchars($ticket['titre']) . "</b><br><br>" .
+            "Si vous avez encore besoin d'aide, n'hésitez pas à répondre à ce message.<br><br>" .
+            "Cordialement,<br>L'équipe support"
+        );
+        $email->setMailType('html');
+        @$email->send();
     }
 
     // Méthode pour débugger les routes
