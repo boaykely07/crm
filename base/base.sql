@@ -142,8 +142,6 @@ CREATE TABLE actions (
 );
 
 
-
-
 -- Table des ventes
 CREATE TABLE ventes (
     id INT AUTO_INCREMENT PRIMARY KEY,
