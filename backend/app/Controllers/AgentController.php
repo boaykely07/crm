@@ -30,7 +30,7 @@ class AgentController extends BaseController
             'total' => count($tickets_individuels),
             'en_cours' => count(array_filter($tickets_individuels, fn($t) => $t['statut'] === 'en_cours')),
             'resolus' => count(array_filter($tickets_individuels, fn($t) => $t['statut'] === 'resolu')),
-            'nouveaux' => count(array_filter($tickets_individuels, fn($t) => $t['statut'] === 'nouveau'))
+            'nouveaux' => count(array_filter($tickets_individuels, fn($t) => $t['statut'] === 'ouvert'))
         ];
 
         // Statistiques des tickets du groupe
@@ -41,7 +41,7 @@ class AgentController extends BaseController
                 'total' => count($tickets_groupe),
                 'en_cours' => count(array_filter($tickets_groupe, fn($t) => $t['statut'] === 'en_cours')),
                 'resolus' => count(array_filter($tickets_groupe, fn($t) => $t['statut'] === 'resolu')),
-                'nouveaux' => count(array_filter($tickets_groupe, fn($t) => $t['statut'] === 'nouveau'))
+                'nouveaux' => count(array_filter($tickets_groupe, fn($t) => $t['statut'] === 'ouvert'))
             ];
         }
 
@@ -136,7 +136,7 @@ class AgentController extends BaseController
         $user = $this->utilisateurModel->find($userId);
         $ticket = $this->ticketModel->find($ticketId);
 
-        if (!$ticket || $ticket['id_groupe'] !== $user['id_groupe'] || $ticket['id_agent'] || $ticket['statut'] !== 'nouveau') {
+        if (!$ticket || $ticket['id_groupe'] !== $user['id_groupe'] || $ticket['id_agent'] || $ticket['statut'] !== 'ouvert') {
             return $this->response->setJSON(['success' => false]);
         }
 

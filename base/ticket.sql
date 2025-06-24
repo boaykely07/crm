@@ -27,7 +27,7 @@ CREATE TABLE tickets (
     id_categorie INT NOT NULL,
     id_agent INT DEFAULT NULL,         -- pour gestion individuelle
     id_groupe INT DEFAULT NULL,        -- pour gestion en équipe
-    statut ENUM('nouveau', 'en_attente', 'en_cours', 'resolu', 'ferme') DEFAULT 'nouveau',
+    statut ENUM('ouvert', 'en_cours', 'resolu', 'ferme') DEFAULT 'ouvert',
     priorite ENUM('basse', 'moyenne', 'haute') DEFAULT 'moyenne',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,

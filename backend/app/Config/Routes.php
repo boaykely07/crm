@@ -53,7 +53,7 @@ $routes->get('/admin/listeBudgetCRM', 'AdminController::listeBudgetCRMPage');
 $routes->get('/admin/validerBudgetCRM/(:num)', 'AdminController::validerBudgetCRM/$1');
 
 // Routes pour la gestion des tickets
-$routes->get('/admin/tickets', 'TicketController::index');
+$routes->get('/admin/tickets', 'AdminController::listeTicketsPage');
 $routes->post('/admin/tickets/update-status/(:num)', 'TicketController::updateStatus/$1');
 $routes->post('/admin/tickets/assign-agent/(:num)', 'TicketController::assignAgent/$1');
 $routes->post('/admin/tickets/assign-groupe/(:num)', 'TicketController::assignGroupe/$1');
