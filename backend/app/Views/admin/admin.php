@@ -126,9 +126,15 @@
                             <i class="fas fa-tachometer-alt me-2"></i> Listes Budget CRM
                         </a>
                     </li>
+                    
                     <li class="nav-item">
                         <a href="<?= site_url('/admin/tickets') ?>" class="active">
                             <i class="fas fa-ticket-alt me-2"></i> Gestion des Tickets
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= site_url('/admin/listeMessageClient') ?>">
+                            <i class="fas fa-envelope me-2"></i> Messages Clients
                         </a>
                     </li>
                     <form method="post" action="<?= site_url('auth/logout') ?>" class="mt-auto">
