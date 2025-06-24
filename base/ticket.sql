@@ -83,3 +83,17 @@ CREATE TABLE commentaire_message (
 
 INSERT INTO categories (nom, type) VALUES
   ('ticket', 'depense');
+
+
+
+
+  
+
+
+
+
+
+
+
+ALTER TABLE clients
+ADD COLUMN mot_de_passe VARCHAR(255) NOT NULL;
