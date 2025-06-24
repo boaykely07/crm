@@ -87,11 +87,6 @@ INSERT INTO categories (nom, type) VALUES
 
 
 
-  
-
-
-
-
 
 
 
