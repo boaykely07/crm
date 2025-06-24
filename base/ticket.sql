@@ -32,9 +32,9 @@ CREATE TABLE tickets (
     date_ouverture TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     THoraire DOUBLE NOT NULL,
     etoiles INT DEFAULT NULL,
-    date_heure_debut DATETIME DEFAULT NOT NULL,
-    date_heure_fin DATETIME DEFAULT NOT NULL,
-    fichier_url VARCHAR(500) DEFAULT NULL;
+    date_heure_debut DATETIME NOT NULL,
+    date_heure_fin DATETIME NOT NULL,
+    fichier_url VARCHAR(500) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (id_client) REFERENCES clients(id),
@@ -60,7 +60,7 @@ CREATE TABLE message_client (
     id_client INT NOT NULL,
     id_ticket INT,
     message TEXT NOT NULL,
-    fichier_url VARCHAR(500) DEFAULT NULL;
+    fichier_url VARCHAR(500) DEFAULT NULL,
     date_message TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_client) REFERENCES clients(id)
 );
@@ -81,3 +81,5 @@ CREATE TABLE commentaire_message (
     FOREIGN KEY (id_utilisateur) REFERENCES utilisateurs(id)
 );
 
+INSERT INTO categories (nom, type) VALUES
+  ('ticket', 'depense');
