@@ -4,24 +4,31 @@
 <?= $this->extend('agent/agent') ?>
 
 <?= $this->section('content') ?>
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success"><?= session('success') ?></div>
+<?php endif; ?>
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger"><?= session('error') ?></div>
+<?php endif; ?>
+<div class="container-fluid">
 <div class="row">
     <div class="col-12">
         <div class="card">
             <div class="card-header">
                 <h6 class="m-0 font-weight-bold">Mes tickets</h6>
             </div>
-            <div class="card-body">
+            <div class="container-fluid">
                 <div class="table-responsive">
-                    <table class="table">
-                        <thead>
+                    <table class="table table-hover table-bordered align-middle table-lg" style="font-size:1.1rem;">
+                        <thead class="table-light">
                             <tr>
-                                <th>ID</th>
-                                <th>Titre</th>
-                                <th>Client</th>
-                                <th>Catégorie</th>
-                                <th>Statut</th>
-                                <th>Date</th>
-                                <th>Actions</th>
+                                <th style="min-width: 80px;">ID</th>
+                                <th style="min-width: 220px;">Titre</th>
+                                <th style="min-width: 180px;">Client</th>
+                                <th style="min-width: 180px;">Catégorie</th>
+                                <th style="min-width: 140px;">Statut</th>
+                                <th style="min-width: 180px;">Date</th>
+                                <th style="min-width: 240px;">Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -41,38 +48,29 @@
                                 </td>
                                 <td><?= date('d/m/Y H:i', strtotime($ticket['created_at'])) ?></td>
                                 <td>
-                                    <?php if ($ticket['statut'] !== 'resolu' && $ticket['statut'] !== 'ferme'): ?>
-                                    <div class="btn-group">
-                                        <button type="button" class="btn btn-sm btn-primary dropdown-toggle" 
-                                                data-bs-toggle="dropdown">
-                                            Mettre à jour
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <?php if ($ticket['statut'] === 'nouveau' || $ticket['statut'] === 'en_attente'): ?>
-                                            <li>
-                                                <a class="dropdown-item" href="#" 
-                                                   onclick="updateStatus(<?= $ticket['id'] ?>, 'en_cours')">
-                                                    Marquer comme en cours
-                                                </a>
-                                            </li>
-                                            <?php endif; ?>
-                                            <?php if ($ticket['statut'] === 'en_cours'): ?>
-                                            <li>
-                                                <a class="dropdown-item" href="#" 
-                                                   onclick="updateStatus(<?= $ticket['id'] ?>, 'resolu')">
-                                                    Marquer comme résolu
-                                                </a>
-                                            </li>
-                                            <li>
-                                                <a class="dropdown-item" href="#" 
-                                                   onclick="updateStatus(<?= $ticket['id'] ?>, 'en_attente')">
-                                                    Remettre en attente
-                                                </a>
-                                            </li>
-                                            <?php endif; ?>
-                                        </ul>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <form method="post" action="<?= site_url('agent/tickets/' . $ticket['id'] . '/status') ?>">
+                                            <input type="hidden" name="status" value="en_cours">
+                                            <?= csrf_field() ?>
+                                            <button class="btn btn-sm btn-primary" type="submit">
+                                                <i class="fas fa-play"></i> En cours
+                                            </button>
+                                        </form>
+                                        <form method="post" action="<?= site_url('agent/tickets/' . $ticket['id'] . '/status') ?>">
+                                            <input type="hidden" name="status" value="resolu">
+                                            <?= csrf_field() ?>
+                                            <button class="btn btn-sm btn-success" type="submit">
+                                                <i class="fas fa-check"></i> Résolu
+                                            </button>
+                                        </form>
+                                        <form method="post" action="<?= site_url('agent/tickets/' . $ticket['id'] . '/status') ?>">
+                                            <input type="hidden" name="status" value="ferme">
+                                            <?= csrf_field() ?>
+                                            <button class="btn btn-sm btn-danger" type="submit">
+                                                <i class="fas fa-times"></i> Fermé
+                                            </button>
+                                        </form>
                                     </div>
-                                    <?php endif; ?>
                                 </td>
                             </tr>
                             <?php endforeach; ?>
@@ -83,6 +81,7 @@
         </div>
     </div>
 </div>
+</div>
 
 <script src="<?= base_url('assets/js/ticket-update.js') ?>"></script>
 <script>
@@ -92,5 +91,32 @@
         csrfToken: '<?= csrf_hash() ?>',
         csrfName: '<?= csrf_token() ?>'
     };
+
+    function updateStatus(ticketId, newStatus) {
+        fetch(ticketConfig.baseUrl + 'agent/tickets/' + ticketId + '/status', {
+            method: 'POST',
+            credentials: 'same-origin',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                [ticketConfig.csrfName]: ticketConfig.csrfToken
+            },
+            body: 'status=' + encodeURIComponent(newStatus)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message || 'Erreur lors de la mise à jour du statut');
+            }
+        })
+        .catch(() => {
+            alert('Erreur réseau ou serveur');
+        });
+    }
 </script>
+<style>
+    .dropdown-menu { max-height: none !important; overflow: visible !important; }
+    table.table-lg th, table.table-lg td { padding-top: 1.2rem !important; padding-bottom: 1.2rem !important; }
+</style>
 <?= $this->endSection() ?>

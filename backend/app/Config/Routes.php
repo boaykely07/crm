@@ -78,7 +78,6 @@ $routes->group('agent', ['filter' => 'agent'], function($routes) {
     $routes->get('dashboard', 'AgentController::dashboard');
     $routes->get('mes-tickets', 'AgentController::mesTickets');
     $routes->get('tickets-groupe', 'AgentController::ticketsGroupe');
-    $routes->post('tickets/(:num)/status', 'TicketController::updateStatus/$1');
     $routes->get('tickets/(:num)/test', 'TicketController::testRoute/$1'); // Route de test
     $routes->post('tickets/(:num)/take', 'AgentController::takeTicket/$1');
 });
@@ -92,3 +91,7 @@ $routes->get('/client/logout', 'ClientAuthController::logout');
 $routes->get('/client/dashboard', 'ClientController::dashboard');
 $routes->get('/client/liste-messages', 'ClientController::listeMessages');
 $routes->post('/client/message/add', 'ClientController::addMessage');
+
+$routes->post('/admin/creerTicketDepuisMessage', 'AdminController::creerTicketDepuisMessage');
+
+$routes->post('agent/tickets/(:num)/status', 'TicketController::updateStatus/$1');

@@ -93,6 +93,21 @@
         }
     </style>
 
+<?php if (session()->getFlashdata('error')): ?>
+    <div class="alert alert-danger alert-dismissible fade show mt-3" role="alert">
+        <i class="fas fa-exclamation-triangle me-2"></i>
+        <?= esc(session()->getFlashdata('error')) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+<?php endif; ?>
+<?php if (session()->getFlashdata('success')): ?>
+    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
+        <i class="fas fa-check-circle me-2"></i>
+        <?= esc(session()->getFlashdata('success')) ?>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Fermer"></button>
+    </div>
+<?php endif; ?>
+
 <div class="container-fluid mt-4">
     <div class="row justify-content-center">
         <div class="col-lg-7 col-md-9">
@@ -149,6 +164,75 @@
                         <div class="alert alert-warning">Aucun détail trouvé pour ce message.</div>
                     <?php endif; ?>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row justify-content-center mt-5">
+    <div class="col-lg-7 col-md-9">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0"><i class="fas fa-plus-circle me-2"></i>Créer un Ticket à partir de ce message</h5>
+            </div>
+            <div class="card-body">
+                <form action="<?= site_url('/admin/creerTicketDepuisMessage') ?>" method="post">
+                    <input type="hidden" name="id_message_client" value="<?= $message['id'] ?>">
+                    <input type="hidden" name="id_client" value="<?= $message['id_client'] ?>">
+                    <div class="mb-3">
+                        <label for="titre" class="form-label">Titre du ticket</label>
+                        <input type="text" class="form-control" id="titre" name="titre" required placeholder="Titre du ticket">
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required><?= htmlspecialchars($message['message']) ?></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_categorie" class="form-label">Catégorie</label>
+                        <select class="form-select" id="id_categorie" name="id_categorie" required>
+                            <option value="">Sélectionner une catégorie</option>
+                            <?php if (isset($categories) && is_array($categories)): ?>
+                                <?php foreach ($categories as $cat): ?>
+                                    <option value="<?= $cat['id'] ?>"><?= htmlspecialchars($cat['nom']) ?></option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="id_agent" class="form-label">Agent assigné</label>
+                        <select class="form-select" id="id_agent" name="id_agent">
+                            <option value="">Aucun (gestion par groupe ou à assigner plus tard)</option>
+                            <?php if (isset($agents) && is_array($agents)): ?>
+                                <?php foreach ($agents as $agent): ?>
+                                    <option value="<?= $agent['id'] ?>">
+                                        <?= htmlspecialchars($agent['nom'] . ' ' . $agent['prenom']) ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            <?php endif; ?>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="priorite" class="form-label">Priorité</label>
+                        <select class="form-select" id="priorite" name="priorite" required>
+                            <option value="basse">Basse</option>
+                            <option value="moyenne">Moyenne</option>
+                            <option value="haute">Haute</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="THoraire" class="form-label">Taux Horaire (THoraire)</label>
+                        <input type="number" step="0.01" min="0" class="form-control" id="THoraire" name="THoraire" required placeholder="Taux horaire">
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_heure_debut" class="form-label">Date et heure de début</label>
+                        <input type="datetime-local" class="form-control" id="date_heure_debut" name="date_heure_debut" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="date_heure_fin" class="form-label">Date et heure de fin</label>
+                        <input type="datetime-local" class="form-control" id="date_heure_fin" name="date_heure_fin" required>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> Créer le ticket</button>
+                </form>
             </div>
         </div>
     </div>
