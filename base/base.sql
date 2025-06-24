@@ -129,6 +129,9 @@ CREATE TABLE clients (
     FOREIGN KEY (id_categorie) REFERENCES categoriesClient(id)
 );
 
+
+
+
 -- Table des actions (CRM)
 CREATE TABLE actions (
     id INT AUTO_INCREMENT PRIMARY KEY,

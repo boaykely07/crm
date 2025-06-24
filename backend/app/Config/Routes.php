@@ -84,3 +84,8 @@ $routes->group('agent', ['filter' => 'agent'], function($routes) {
 });
 
 $routes->get('/admin/listeMessageClient', 'AdminController::listeMessageClientPage');
+
+$routes->get('/client/login', 'ClientAuthController::loginPage');
+$routes->post('/client/auth/login', 'ClientAuthController::login');
+$routes->get('/client/logout', 'ClientAuthController::logout');
+$routes->get('/client/dashboard', 'ClientController::dashboard');

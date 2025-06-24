@@ -24,4 +24,14 @@ class ClientsModel extends Model
                     ->groupBy('categoriesClient.id')
                     ->findAll();
     }
+
+    // Vérifie le mot de passe hashé
+    public function verifyPassword($email, $password)
+    {
+        $client = $this->where('email', $email)->first();
+        if ($client && password_verify($password, $client['mot_de_passe'])) {
+            return $client;
+        }
+        return false;
+    }
 }
