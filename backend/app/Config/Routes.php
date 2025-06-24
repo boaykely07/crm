@@ -90,3 +90,5 @@ $routes->get('/client/login', 'ClientAuthController::loginPage');
 $routes->post('/client/auth/login', 'ClientAuthController::login');
 $routes->get('/client/logout', 'ClientAuthController::logout');
 $routes->get('/client/dashboard', 'ClientController::dashboard');
+$routes->get('/client/liste-messages', 'ClientController::listeMessages');
+$routes->post('/client/message/add', 'ClientController::addMessage');
