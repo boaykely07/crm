@@ -1,0 +1,438 @@
+// Variables
+$primary: #2c3e50; // Couleur principale (bleu foncé)
+$secondary: #3498db; // Couleur secondaire (bleu clair)
+$accent: #e74c3c; // Couleur d'accent (rouge)
+$success: #2ecc71; // Couleur de succès (vert)
+$warning: #f1c40f; // Couleur d'avertissement (jaune)
+$purple: #9b59b6; // Couleur additionnelle (violet)
+$background: #f4f7fa; // Fond clair
+$text: #333; // Texte principal
+$muted: #7f8c8d; // Texte secondaire
+$white: #ffffff; // Blanc
+$shadow: 0 4px 12px rgba(0, 0, 0, 0.1); // Ombre douce
+$shadow-hover: 0 8px 16px rgba(0, 0, 0, 0.15); // Ombre au survol
+$border-radius: 12px; // Arrondi des bordures
+$transition: all 0.3s ease; // Transition standard
+$font-family: 'Inter', sans-serif;
+$font-size-base: 16px;
+
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-style {
+  background: $white;
+  border-radius: $border-radius;
+  padding: 1.5rem;
+  box-shadow: $shadow;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+    box-shadow: $shadow-hover;
+  }
+}
+
+@mixin hover-effect {
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+  
+  &:hover::after {
+    opacity: 1;
+  }
+}
+
+// Import de la police Google Fonts et Font Awesome pour icônes
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+
+// Styles de base
+body {
+  font-family: $font-family;
+  font-size: $font-size-base;
+  background: $background;
+  color: $text;
+  margin: 0;
+  display: flex;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+// Sidebar
+.sidebar {
+  width: 250px;
+  background: $primary;
+  color: $white;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  position: fixed;
+  z-index: 10;
+  transition: $transition;
+  
+  .logo {
+    @include flex-center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba($white, 0.2);
+    
+    img {
+      width: 36px;
+      margin-right: 0.5rem;
+      filter: brightness(0) invert(1);
+    }
+    
+    span {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+  }
+  
+  .nav {
+    flex-grow: 1;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    
+    li {
+      margin: 0.75rem 0;
+    }
+    
+    a {
+      color: $white;
+      text-decoration: none;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      border-radius: 8px;
+      transition: background 0.3s ease, transform 0.2s ease;
+      opacity: 0.85;
+      font-weight: 500;
+      @include hover-effect;
+      
+      i {
+        margin-right: 10px;
+        width: 20px;
+        text-align: center;
+      }
+      
+      &.active,
+      &:hover {
+        background: rgba($white, 0.1);
+        opacity: 1;
+        transform: translateX(5px);
+      }
+      
+      &.active {
+        border-left: 3px solid $secondary;
+      }
+    }
+  }
+  
+  .logout {
+    margin-top: auto;
+    
+    button {
+      width: 100%;
+      padding: 0.75rem;
+      background: $accent;
+      color: $white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.2s ease;
+      @include hover-effect;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      
+      i {
+        margin-right: 8px;
+      }
+      
+      &:hover {
+        background: darken($accent, 10%);
+        transform: translateY(-2px);
+      }
+    }
+  }
+}
+
+// Main content
+.main {
+  margin-left: 300px;
+  padding: 2rem;
+  flex-grow: 1;
+  transition: margin-left 0.3s ease;
+  
+  h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: $primary;
+    margin-bottom: 0.5rem;
+    position: relative;
+    display: inline-block;
+    
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      width: 40px;
+      height: 4px;
+      background: $secondary;
+      border-radius: 2px;
+    }
+  }
+  
+  p {
+    color: $muted;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+  }
+}
+
+// Header avec date et profil
+.header {
+  @include flex-between;
+  margin-bottom: 2rem;
+  
+  .date {
+    font-size: 0.9rem;
+    color: $muted;
+    background: rgba($secondary, 0.1);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    
+    i {
+      margin-right: 6px;
+      color: $secondary;
+    }
+  }
+}
+
+// Profil utilisateur
+.profile {
+  display: flex;
+  align-items: center;
+  
+  img {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-right: 0.75rem;
+    border: 2px solid rgba($secondary, 0.3);
+  }
+  
+  .info {
+    line-height: 1.2;
+    
+    .name {
+      font-weight: 600;
+      color: $primary;
+    }
+    
+    .role {
+      font-size: 0.8rem;
+      color: $muted;
+    }
+  }
+}
+
+// Graphiques
+.chart-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 1.5rem;
+  margin-top: 2rem;
+  
+  .chart-card {
+    @include card-style;
+    @include hover-effect;
+    
+    h5 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: $primary;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      
+      i {
+        margin-right: 10px;
+        color: $secondary;
+      }
+    }
+    
+    p {
+      color: $muted;
+      font-size: 0.9rem;
+      margin-bottom: 1.5rem;
+      padding-left: 26px; // Aligner avec l'icône
+    }
+    
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 300px;
+      margin-top: 1rem;
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 992px) {
+  .chart-section {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    width: 80px;
+    padding: 1rem 0.5rem;
+    
+    .logo {
+      justify-content: center;
+      margin-bottom: 1.5rem;
+      
+      span {
+        display: none;
+      }
+      
+      img {
+        margin-right: 0;
+      }
+    }
+    
+    .nav {
+      a {
+        padding: 0.75rem;
+        justify-content: center;
+        
+        span {
+          display: none;
+        }
+        
+        i {
+          margin-right: 0;
+          font-size: 1.2rem;
+        }
+      }
+    }
+    
+    .logout {
+      button {
+        padding: 0.5rem;
+        
+        span {
+          display: none;
+        }
+        
+        i {
+          margin-right: 0;
+        }
+      }
+    }
+  }
+  
+  .main {
+    margin-left: 80px;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  body {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100%;
+    height: auto;
+    position: relative;
+    padding: 1rem;
+    flex-direction: row;
+    align-items: center;
+    
+    .logo {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .nav {
+      display: flex;
+      overflow-x: auto;
+      padding: 0 1rem;
+      
+      li {
+        margin: 0 0.5rem;
+        white-space: nowrap;
+      }
+      
+      a {
+        span {
+          display: inline;
+          margin-left: 6px;
+        }
+        
+        i {
+          margin-right: 0;
+        }
+      }
+    }
+    
+    .logout {
+      margin-top: 0;
+      margin-left: auto;
+      
+      button {
+        padding: 0.5rem 1rem;
+        
+        span {
+          display: inline;
+          margin-left: 6px;
+        }
+      }
+    }
+  }
+  
+  .main {
+    margin-left: 0;
+  }
+  
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    
+    .date {
+      margin-bottom: 1rem;
+    }
+  }
+}

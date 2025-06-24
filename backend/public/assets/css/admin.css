@@ -1,0 +1,126 @@
+/* Theme variables */
+:root {
+    --mint-primary: #99EDC3;
+    --mint-secondary: #7DE2AD;
+    --mint-light: #E8FFF3;
+    --mint-dark: #5BC88A;
+    --white: #FFFFFF;
+}
+
+/* Base styles */
+body {
+    background-color: var(--mint-light);
+    min-height: 100vh;
+}
+
+/* Table styles */
+.table-container {
+    background: var(--white);
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    margin-bottom: 20px;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: var(--mint-primary);
+    color: #2C3E50;
+    font-weight: 600;
+    border-bottom: none;
+    padding: 15px;
+}
+
+.table tbody td {
+    padding: 12px 15px;
+    vertical-align: middle;
+}
+
+.table tbody tr:hover {
+    background-color: var(--mint-light);
+}
+
+/* Card styles */
+.card {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+    background-color: var(--mint-primary);
+    border-bottom: none;
+    padding: 15px 20px;
+    border-radius: 15px 15px 0 0 !important;
+}
+
+.card-title {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 0;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--mint-primary);
+    border-color: var(--mint-primary);
+    color: #2C3E50;
+}
+
+.btn-primary:hover {
+    background-color: var(--mint-dark);
+    border-color: var(--mint-dark);
+    color: var(--white);
+}
+
+/* Badges */
+.badge {
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.badge.bg-success {
+    background-color: var(--mint-dark) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--mint-primary) !important;
+    color: #333 !important;
+}
+
+/* Pagination styles */
+.pagination .page-link {
+    color: #333;
+    border: 1px solid var(--mint-primary);
+}
+
+.pagination .page-item.active .page-link {
+    background-color: var(--mint-primary);
+    border-color: var(--mint-primary);
+    color: #333;
+}
+
+/* Form controls */
+.form-control:focus {
+    border-color: var(--mint-primary);
+    box-shadow: 0 0 0 0.2rem rgba(153, 237, 195, 0.25);
+}
+
+/* Search bar */
+.search-container {
+    background-color: var(--white);
+    border-radius: 20px;
+    padding: 8px 15px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.search-container input {
+    border: none;
+    background: transparent;
+}
+
+.search-container input:focus {
+    outline: none;
+}
