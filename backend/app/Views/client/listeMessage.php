@@ -285,6 +285,106 @@
             color: var(--primary);
         }
     }
+
+    .action-col {
+        text-align: center;
+        width: 60px;
+    }
+    .comment-btn {
+        background: none;
+        border: none;
+        color: var(--primary-dark);
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: color 0.2s;
+    }
+    .comment-btn:hover { color: var(--primary-light); }
+    /* Modal commentaires façon Facebook */
+    .modal-comments .modal-dialog {
+        max-width: 420px;
+        margin: 2.5rem auto;
+    }
+    .modal-comments .modal-content {
+        border-radius: 18px;
+        box-shadow: 0 8px 32px rgba(67,97,238,0.13);
+        border: none;
+        padding: 0 2px;
+        min-height: 480px;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-comments .modal-header {
+        background: linear-gradient(90deg, var(--primary) 0%, var(--primary-light) 100%);
+        color: #fff;
+        border-top-left-radius: 18px;
+        border-top-right-radius: 18px;
+        border-bottom: none;
+        padding: 18px 24px;
+    }
+    .modal-comments .modal-title { font-weight: 600; }
+    .comments-list {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 18px 16px 8px 16px;
+        background: #f8fafc;
+        max-height: 350px;
+    }
+    .comment-bubble {
+        max-width: 80%;
+        margin-bottom: 18px;
+        padding: 12px 18px;
+        border-radius: 18px;
+        background: #e9f0fb;
+        color: #222;
+        box-shadow: 0 2px 8px rgba(67,97,238,0.07);
+        position: relative;
+        word-break: break-word;
+        font-size: 1.05rem;
+    }
+    .comment-bubble.client { background: #4361EE; color: #fff; margin-left: auto; }
+    .comment-bubble.agent { background: #fff; color: #222; border: 1px solid #cbd5e1; margin-right: auto; }
+    .comment-bubble.admin { background: #4cc9f0; color: #fff; margin-right: auto; }
+    .comment-author {
+        font-size: 0.92rem;
+        font-weight: 600;
+        margin-bottom: 2px;
+        color: var(--primary-dark);
+    }
+    .comment-date {
+        font-size: 0.85rem;
+        color: #888;
+        margin-top: 2px;
+        text-align: right;
+    }
+    .comment-input-row {
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+        padding: 12px 16px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+    .comment-input-row input[type="text"] {
+        flex: 1;
+        border-radius: 16px;
+        border: 1px solid #cbd5e1;
+        padding: 10px 16px;
+        font-size: 1rem;
+    }
+    .comment-input-row button {
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s;
+    }
+    .comment-input-row button:hover { background: var(--primary-light); }
 </style>
 <div class="container-fluid">
     <h1 class="page-title">
@@ -304,6 +404,7 @@
                             <th>Message</th>
                             <th>Date</th>
                             <th>Ticket lié</th>
+                            <th class="action-col">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -312,14 +413,14 @@
                                 <tr>
                                     <td data-label="ID"><?= $msg['id'] ?></td>
                                     <td data-label="Message">
-                                        <div class="msg-content">
+                                     
                                             <?= nl2br(htmlspecialchars($msg['message'])) ?>
                                             <?php if (!empty($msg['fichier_url'])): ?>
                                                 <a href="<?= base_url('upload/'.$msg['fichier_url']) ?>" target="_blank" class="file-badge">
                                                     <i class="fas fa-file-pdf"></i> Voir le PDF
                                                 </a>
                                             <?php endif; ?>
-                                        </div>
+                                     
                                     </td>
                                     <td data-label="Date"><?= date('d/m/Y H:i', strtotime($msg['date_message'])) ?></td>
                                     <td data-label="Ticket lié">
@@ -331,11 +432,16 @@
                                             <span class="text-muted">-</span>
                                         <?php endif; ?>
                                     </td>
+                                    <td class="action-col">
+                                        <a class="comment-btn" href="<?= site_url('/client/commentaire-message/'.$msg['id']) ?>" title="Voir les commentaires">
+                                            <i class="fas fa-comment-dots"></i>
+                                        </a>
+                                    </td>
                                 </tr>
                             <?php endforeach; ?>
                         <?php else: ?>
                             <tr>
-                                <td colspan="4" class="text-center py-5">
+                                <td colspan="5" class="text-center py-5">
                                     <i class="fas fa-inbox fa-3x mb-3 text-muted"></i>
                                     <h5 class="text-muted">Aucun message trouvé</h5>
                                 </td>
@@ -346,6 +452,26 @@
             </div>
         </div>
     </div>
+</div>
+
+<!-- Modal commentaires (dynamique) -->
+<div class="modal fade modal-comments" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="commentsModalLabel"><i class="fas fa-comments me-2"></i>Commentaires</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="comments-list" id="commentsList">
+        <!-- Les commentaires seront injectés ici en JS -->
+      </div>
+      <form id="commentForm" class="comment-input-row" autocomplete="off">
+        <input type="hidden" name="id_message_client" id="id_message_client" value="">
+        <input type="text" name="commentaire" id="commentaireInput" placeholder="Votre commentaire..." required maxlength="500">
+        <button type="submit" title="Envoyer"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+  </div>
 </div>
 
 <!-- Bouton flottant pour ajouter un message -->
@@ -387,3 +513,75 @@
 <!-- FontAwesome pour les icônes -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+// JS pour charger et afficher les commentaires dynamiquement
+const commentsModal = new bootstrap.Modal(document.getElementById('commentsModal'));
+document.querySelectorAll('.comment-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const messageId = this.getAttribute('data-message-id');
+        document.getElementById('id_message_client').value = messageId;
+        document.getElementById('commentsList').innerHTML = '<div class="text-center text-muted my-4"><i class="fas fa-spinner fa-spin"></i> Chargement...</div>';
+        commentsModal.show();
+        fetch('<?= site_url('/client/comments/') ?>' + messageId)
+            .then(res => res.json())
+            .then(data => {
+                let html = '';
+                if (data.length === 0) {
+                    html = '<div class="text-center text-muted">Aucun commentaire.</div>';
+                } else {
+                    data.forEach(c => {
+                        let bubbleClass = c.auteur;
+                        let author = c.auteur.charAt(0).toUpperCase() + c.auteur.slice(1);
+                        html += `<div class="comment-bubble ${bubbleClass}">
+                            <div class="comment-author">${author}</div>
+                            ${c.commentaire}
+                            <div class="comment-date">${c.date_commentaire}</div>
+                        </div>`;
+                    });
+                }
+                document.getElementById('commentsList').innerHTML = html;
+                document.getElementById('commentsList').scrollTop = document.getElementById('commentsList').scrollHeight;
+            });
+    });
+});
+// JS pour ajouter un commentaire sans recharger la page
+const commentForm = document.getElementById('commentForm');
+commentForm.addEventListener('submit', function(e) {
+    e.preventDefault();
+    const id_message_client = document.getElementById('id_message_client').value;
+    const commentaire = document.getElementById('commentaireInput').value.trim();
+    if (!commentaire) return;
+    fetch('<?= site_url('/client/comments/add') ?>', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ id_message_client, commentaire })
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            // Recharge les commentaires
+            fetch('<?= site_url('/client/comments/') ?>' + id_message_client)
+                .then(res => res.json())
+                .then(data => {
+                    let html = '';
+                    if (data.length === 0) {
+                        html = '<div class="text-center text-muted">Aucun commentaire.</div>';
+                    } else {
+                        data.forEach(c => {
+                            let bubbleClass = c.auteur;
+                            let author = c.auteur.charAt(0).toUpperCase() + c.auteur.slice(1);
+                            html += `<div class="comment-bubble ${bubbleClass}">
+                                <div class="comment-author">${author}</div>
+                                ${c.commentaire}
+                                <div class="comment-date">${c.date_commentaire}</div>
+                            </div>`;
+                        });
+                    }
+                    document.getElementById('commentsList').innerHTML = html;
+                    document.getElementById('commentsList').scrollTop = document.getElementById('commentsList').scrollHeight;
+                });
+            document.getElementById('commentaireInput').value = '';
+        }
+    });
+});
+</script>

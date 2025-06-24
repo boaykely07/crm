@@ -62,4 +62,42 @@ class ClientController extends Controller
         $model->insert($data);
         return redirect()->to('/client/liste-messages')->with('success', 'Message envoyé avec succès.');
     }
+
+    public function commentaireMessage($id)
+    {
+        if (!session()->get('isClientLoggedIn')) {
+            return redirect()->to('/client/login');
+        }
+        $messageModel = new \App\Models\MessageClientModel();
+        $commentModel = new \App\Models\CommentaireMessageModel();
+        $message = $messageModel->find($id);
+        if (!$message) {
+            return redirect()->to('/client/liste-messages')->with('error', 'Message non trouvé.');
+        }
+        $commentaires = $commentModel->where('id_message_client', $id)->orderBy('date_commentaire', 'ASC')->findAll();
+        return view('client/commentaireMessage', [
+            'message' => $message,
+            'commentaires' => $commentaires
+        ]);
+    }
+
+    public function addCommentaireMessage($id)
+    {
+        if (!session()->get('isClientLoggedIn')) {
+            return redirect()->to('/client/login');
+        }
+        $commentModel = new \App\Models\CommentaireMessageModel();
+        $commentaire = trim($this->request->getPost('commentaire'));
+        if ($commentaire) {
+            $commentModel->insert([
+                'id_message_client' => $id,
+                'id_utilisateur' => session('client_id'),
+                'auteur' => 'client',
+                'commentaire' => $commentaire
+            ]);
+            return redirect()->to('/client/commentaire-message/'.$id)->with('success', 'Commentaire ajouté.');
+        } else {
+            return redirect()->to('/client/commentaire-message/'.$id)->with('error', 'Le commentaire ne peut pas être vide.');
+        }
+    }
 }
