@@ -4,6 +4,42 @@
 <div class="container-fluid mt-4">
     <h2 class="mb-4 text-dark fw-bold"><i class="fas fa-chart-bar me-2 text-primary"></i>Rapport Performance</h2>
 
+    <!-- Filtres -->
+    <div class="card shadow-lg border-0 rounded-3 mb-4">
+        <div class="card-header bg-primary text-white rounded-top-3">
+            <h5 class="mb-0"><i class="fas fa-filter me-2"></i>Filtres</h5>
+        </div>
+        <div class="card-body">
+            <form method="GET" action="<?= site_url('/admin/rapportPerformance') ?>" class="d-flex flex-wrap gap-3">
+                <select name="statut" class="form-select" style="max-width: 200px;">
+                    <option value="">Tous les statuts</option>
+                    <option value="ouvert" <?= $filters['statut'] === 'ouvert' ? 'selected' : '' ?>>Ouvert</option>
+                    <option value="en_cours" <?= $filters['statut'] === 'en_cours' ? 'selected' : '' ?>>En cours</option>
+                    <option value="resolu" <?= $filters['statut'] === 'resolu' ? 'selected' : '' ?>>Résolu</option>
+                    <option value="ferme" <?= $filters['statut'] === 'ferme' ? 'selected' : '' ?>>Fermé</option>
+                </select>
+                <select name="priorite" class="form-select" style="max-width: 200px;">
+                    <option value="">Toutes les priorités</option>
+                    <option value="basse" <?= $filters['priorite'] === 'basse' ? 'selected' : '' ?>>Basse</option>
+                    <option value="moyenne" <?= $filters['priorite'] === 'moyenne' ? 'selected' : '' ?>>Moyenne</option>
+                    <option value="haute" <?= $filters['priorite'] === 'haute' ? 'selected' : '' ?>>Haute</option>
+                </select>
+                <select name="id_categorie" class="form-select" style="max-width: 200px;">
+                    <option value="">Toutes les catégories</option>
+                    <?php foreach ($categories as $category): ?>
+                        <option value="<?= esc($category['id']) ?>" <?= $filters['id_categorie'] == $category['id'] ? 'selected' : '' ?>>
+                            <?= esc($category['nom']) ?>
+                        </option>
+                    <?php endforeach; ?>
+                </select>
+                <input type="date" name="date_debut" class="form-control" style="max-width: 200px;" value="<?= esc($filters['date_debut']) ?>" placeholder="Date de début">
+                <input type="date" name="date_fin" class="form-control" style="max-width: 200px;" value="<?= esc($filters['date_fin']) ?>" placeholder="Date de fin">
+                <button type="submit" class="btn btn-primary"><i class="fas fa-check me-2"></i>Appliquer</button>
+                <a href="<?= site_url('/admin/rapportPerformance') ?>" class="btn btn-outline-secondary"><i class="fas fa-undo me-2"></i>Réinitialiser</a>
+            </form>
+        </div>
+    </div>
+
     <!-- Temps moyen de résolution -->
     <div class="row mb-4">
         <div class="col-lg-4 col-md-6 col-sm-12">
@@ -63,7 +99,7 @@
     <!-- Nombre de tickets ouverts/fermés par semaine -->
     <div class="card shadow-lg border-0 rounded-3">
         <div class="card-header bg-primary text-white rounded-top-3">
-            <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Tickets par semaine (dernières 4 semaines)</h5>
+            <h5 class="mb-0"><i class="fas fa-ticket-alt me-2"></i>Tickets par semaine</h5>
         </div>
         <div class="card-body p-4">
             <canvas id="ticketsChart" height="120"></canvas>
@@ -94,9 +130,6 @@
         font-weight: 600;
         background-color: #f8f9fa;
     }
-    .table tbody tr {
-        transition: background-color 0.2s ease;
-    }
     .display-5 {
         font-size: 2.5rem;
         line-height: 1.2;
@@ -110,6 +143,13 @@
         }
         canvas#ticketsChart {
             height: 200px !important;
+        }
+        .d-flex {
+            flex-direction: column;
+        }
+        .form-select, .form-control, .btn {
+            max-width: 100% !important;
+            margin-bottom: 0.5rem;
         }
     }
 </style>

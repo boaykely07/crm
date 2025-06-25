@@ -9,6 +9,7 @@ use App\Models\ActionsModel;
 use App\Models\TicketModel;
 use App\Models\TicketAgentsModel;
 use App\Models\UtilisateursModel;
+use App\Models\TicketCategoriesModel;
 
 class AdminController extends BaseController
 {
@@ -53,6 +54,7 @@ class AdminController extends BaseController
         $utilisateurModel = new UtilisateursModel();
         $groupeModel = new \App\Models\GroupeModel();
         $ticketAgentsModel = new TicketAgentsModel();
+        $categorieModel = new TicketCategoriesModel();
 
         // Récupérer tous les tickets avec leurs détails
         $tickets = $ticketModel->getTicketsWithDetails();
@@ -71,7 +73,8 @@ class AdminController extends BaseController
         $data = [
             'tickets' => $tickets,
             'agents' => $utilisateurModel->where('role', 'agent')->findAll(),
-            'groupes' => $groupeModel->findAll()
+            'groupes' => $groupeModel->findAll(),
+            'categories' => $categorieModel->findAll()
         ];
 
         return view('admin/admin', [
@@ -80,18 +83,18 @@ class AdminController extends BaseController
     }
 
     public function listeMessageClientPage()
-    {
-        $messageClientModel = new \App\Models\MessageClientModel();
-        $data['messages'] = $messageClientModel->getMessagesWithClient();
-        return view('admin/admin', [
-            'content' => view('admin/listeMessageClient', $data)
-        ]);
-    }
+{
+    $messageClientModel = new \App\Models\MessageClientModel();
+    $data['messages'] = $messageClientModel->getMessagesWithClient();
+    return view('admin/admin', [
+        'content' => view('admin/listeMessageClient', $data)
+    ]);
+}
 
     public function detailMessageClientPage($id)
     {
         $messageModel = new \App\Models\MessageClientModel();
-        $categorieModel = new \App\Models\TicketCategoriesModel();
+        $categorieModel = new TicketCategoriesModel();
         $utilisateurModel = new UtilisateursModel();
         $message = $messageModel
             ->select('message_client.*, clients.nom as client_nom')
@@ -255,30 +258,83 @@ class AdminController extends BaseController
         $ticketModel = new TicketModel();
         $ticketAgentsModel = new TicketAgentsModel();
         $utilisateurModel = new UtilisateursModel();
+        $categorieModel = new TicketCategoriesModel();
+
+        // Récupérer les paramètres de filtrage depuis l'URL
+        $filters = [
+            'statut' => $this->request->getGet('statut') ?: null,
+            'priorite' => $this->request->getGet('priorite') ?: null,
+            'id_categorie' => $this->request->getGet('id_categorie') ?: null,
+            'date_debut' => $this->request->getGet('date_debut') ?: null,
+            'date_fin' => $this->request->getGet('date_fin') ?: null,
+        ];
 
         // Temps moyen de résolution (en heures)
-        $avgResolutionTime = $ticketModel->select('AVG(TIMESTAMPDIFF(HOUR, date_ouverture, date_heure_fin)) as avg_time')
-            ->where('statut', 'ferme')
-            ->first()['avg_time'] ?? 0;
+        $query = $ticketModel->select('AVG(TIMESTAMPDIFF(HOUR, date_ouverture, date_heure_fin)) as avg_time')
+            ->where('statut', 'ferme');
+        
+        if ($filters['priorite']) {
+            $query->where('priorite', $filters['priorite']);
+        }
+        if ($filters['id_categorie']) {
+            $query->where('id_categorie', $filters['id_categorie']);
+        }
+        if ($filters['date_debut']) {
+            $query->where('date_ouverture >=', $filters['date_debut']);
+        }
+        if ($filters['date_fin']) {
+            $query->where('date_ouverture <=', $filters['date_fin']);
+        }
+        
+        $avgResolutionTime = $query->first()['avg_time'] ?? 0;
 
         // Satisfaction moyenne par agent
-        $satisfactionByAgent = $ticketModel->select('utilisateurs.nom, utilisateurs.prenom, AVG(tickets.etoiles) as avg_satisfaction')
+        $satisfactionQuery = $ticketModel->select('utilisateurs.nom, utilisateurs.prenom, AVG(tickets.etoiles) as avg_satisfaction')
             ->join('ticket_agents', 'ticket_agents.id_ticket = tickets.id')
             ->join('utilisateurs', 'utilisateurs.id = ticket_agents.id_agent')
-            ->where('tickets.etoiles IS NOT NULL')
-            ->groupBy('utilisateurs.id')
-            ->findAll();
+            ->where('tickets.etoiles IS NOT NULL');
+        
+        if ($filters['statut']) {
+            $satisfactionQuery->where('tickets.statut', $filters['statut']);
+        }
+        if ($filters['priorite']) {
+            $satisfactionQuery->where('tickets.priorite', $filters['priorite']);
+        }
+        if ($filters['id_categorie']) {
+            $satisfactionQuery->where('tickets.id_categorie', $filters['id_categorie']);
+        }
+        if ($filters['date_debut']) {
+            $satisfactionQuery->where('tickets.date_ouverture >=', $filters['date_debut']);
+        }
+        if ($filters['date_fin']) {
+            $satisfactionQuery->where('tickets.date_ouverture <=', $filters['date_fin']);
+        }
+        
+        $satisfactionByAgent = $satisfactionQuery->groupBy('utilisateurs.id')->findAll();
 
-        // Nombre de tickets ouverts/fermés par semaine (dernières 4 semaines)
-        $ticketsByWeek = $ticketModel->select("
+        // Nombre de tickets ouverts/fermés par semaine
+        $ticketsByWeekQuery = $ticketModel->select("
             YEARWEEK(date_ouverture, 1) as week,
             SUM(CASE WHEN statut = 'ouvert' THEN 1 ELSE 0 END) as ouverts,
             SUM(CASE WHEN statut = 'ferme' THEN 1 ELSE 0 END) as fermes
-        ")
-            ->where('date_ouverture >=', date('Y-m-d', strtotime('-4 weeks')))
-            ->groupBy('week')
-            ->orderBy('week', 'DESC')
-            ->findAll();
+        ");
+        
+        if ($filters['priorite']) {
+            $ticketsByWeekQuery->where('priorite', $filters['priorite']);
+        }
+        if ($filters['id_categorie']) {
+            $ticketsByWeekQuery->where('id_categorie', $filters['id_categorie']);
+        }
+        if ($filters['date_debut']) {
+            $ticketsByWeekQuery->where('date_ouverture >=', $filters['date_debut']);
+        }
+        if ($filters['date_fin']) {
+            $ticketsByWeekQuery->where('date_ouverture <=', $filters['date_fin']);
+        } else {
+            $ticketsByWeekQuery->where('date_ouverture >=', date('Y-m-d', strtotime('-4 weeks')));
+        }
+        
+        $ticketsByWeek = $ticketsByWeekQuery->groupBy('week')->orderBy('week', 'DESC')->findAll();
 
         // Formater les semaines pour l'affichage
         foreach ($ticketsByWeek as &$week) {
@@ -291,7 +347,9 @@ class AdminController extends BaseController
             'title' => 'Rapport Performance',
             'avg_resolution_time' => round($avgResolutionTime, 2),
             'satisfaction_by_agent' => $satisfactionByAgent,
-            'tickets_by_week' => $ticketsByWeek
+            'tickets_by_week' => $ticketsByWeek,
+            'categories' => $categorieModel->findAll(),
+            'filters' => $filters
         ];
 
         return view('admin/admin', [
