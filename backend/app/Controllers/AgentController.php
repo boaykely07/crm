@@ -5,18 +5,21 @@ namespace App\Controllers;
 use App\Models\TicketModel;
 use App\Models\UtilisateursModel;
 use App\Models\GroupeModel;
+use App\Models\TicketAgentsModel;
 
 class AgentController extends BaseController
 {
     protected $ticketModel;
     protected $utilisateurModel;
     protected $groupeModel;
+    protected $ticketAgentsModel;
 
     public function __construct()
     {
         $this->ticketModel = new TicketModel();
         $this->utilisateurModel = new UtilisateursModel();
         $this->groupeModel = new GroupeModel();
+        $this->ticketAgentsModel = new TicketAgentsModel();
     }
 
     public function dashboard()
@@ -24,8 +27,16 @@ class AgentController extends BaseController
         $userId = session()->get('utilisateur')['id'];
         $user = $this->utilisateurModel->find($userId);
         
+        // Récupérer les IDs des tickets assignés à cet agent
+        $ticketIds = $this->ticketAgentsModel->where('id_agent', $userId)
+                                           ->findColumn('id_ticket');
+        
         // Statistiques des tickets individuels
-        $tickets_individuels = $this->ticketModel->where('id_agent', $userId)->findAll();
+        $tickets_individuels = [];
+        if (!empty($ticketIds)) {
+            $tickets_individuels = $this->ticketModel->whereIn('id', $ticketIds)->findAll();
+        }
+        
         $stats_individuelles = [
             'total' => count($tickets_individuels),
             'en_cours' => count(array_filter($tickets_individuels, fn($t) => $t['statut'] === 'en_cours')),
@@ -45,14 +56,17 @@ class AgentController extends BaseController
             ];
         }
 
-        // Derniers tickets assignés
-        $derniers_tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom')
-                                           ->join('clients', 'clients.id = tickets.id_client')
-                                           ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
-                                           ->where('tickets.id_agent', $userId)
-                                           ->orderBy('tickets.created_at', 'DESC')
-                                           ->limit(5)
-                                           ->findAll();
+        // Derniers tickets assignés à cet agent
+        $derniers_tickets = [];
+        if (!empty($ticketIds)) {
+            $derniers_tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom')
+                                               ->join('clients', 'clients.id = tickets.id_client')
+                                               ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
+                                               ->whereIn('tickets.id', $ticketIds)
+                                               ->orderBy('tickets.created_at', 'DESC')
+                                               ->limit(5)
+                                               ->findAll();
+        }
 
         return view('agent/dashboard', [
             'stats_individuelles' => $stats_individuelles,
@@ -65,12 +79,32 @@ class AgentController extends BaseController
     public function mesTickets()
     {
         $userId = session()->get('utilisateur')['id'];
-        $tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom')
-                                   ->join('clients', 'clients.id = tickets.id_client')
-                                   ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
-                                   ->where('tickets.id_agent', $userId)
-                                   ->orderBy('tickets.created_at', 'DESC')
-                                   ->findAll();
+        
+        // Récupérer les IDs des tickets assignés à cet agent
+        $ticketIds = $this->ticketAgentsModel->where('id_agent', $userId)
+                                           ->findColumn('id_ticket');
+        
+        $tickets = [];
+        if (!empty($ticketIds)) {
+            $tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom')
+                                       ->join('clients', 'clients.id = tickets.id_client')
+                                       ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
+                                       ->whereIn('tickets.id', $ticketIds)
+                                       ->orderBy('tickets.created_at', 'DESC')
+                                       ->findAll();
+            
+            // Ajouter les informations des autres agents assignés pour chaque ticket
+            foreach ($tickets as &$ticket) {
+                $autresAgents = $this->ticketAgentsModel
+                    ->select('ticket_agents.*, utilisateurs.nom as agent_nom, utilisateurs.prenom as agent_prenom')
+                    ->join('utilisateurs', 'utilisateurs.id = ticket_agents.id_agent')
+                    ->where('ticket_agents.id_ticket', $ticket['id'])
+                    ->where('ticket_agents.id_agent !=', $userId)
+                    ->findAll();
+                
+                $ticket['autres_agents'] = $autresAgents;
+            }
+        }
 
         return view('agent/mes_tickets', [
             'tickets' => $tickets,
@@ -88,13 +122,33 @@ class AgentController extends BaseController
                            ->with('error', 'Vous n\'êtes pas assigné à un groupe');
         }
 
-        $tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom, utilisateurs.nom as agent_nom, utilisateurs.prenom as agent_prenom')
+        // Récupérer tous les tickets du groupe
+        $tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom')
                                    ->join('clients', 'clients.id = tickets.id_client')
                                    ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
-                                   ->join('utilisateurs', 'utilisateurs.id = tickets.id_agent', 'left')
                                    ->where('tickets.id_groupe', $user['id_groupe'])
                                    ->orderBy('tickets.created_at', 'DESC')
                                    ->findAll();
+
+        // Ajouter les informations des agents assignés pour chaque ticket
+        foreach ($tickets as &$ticket) {
+            $agentsAssignes = $this->ticketAgentsModel
+                ->select('ticket_agents.*, utilisateurs.nom as agent_nom, utilisateurs.prenom as agent_prenom')
+                ->join('utilisateurs', 'utilisateurs.id = ticket_agents.id_agent')
+                ->where('ticket_agents.id_ticket', $ticket['id'])
+                ->findAll();
+            
+            $ticket['agents_assignes'] = $agentsAssignes;
+            
+            // Vérifier si l'agent actuel est assigné à ce ticket
+            $ticket['est_assigne'] = false;
+            foreach ($agentsAssignes as $agent) {
+                if ($agent['id_agent'] == $userId) {
+                    $ticket['est_assigne'] = true;
+                    break;
+                }
+            }
+        }
 
         return view('agent/tickets_groupe', [
             'tickets' => $tickets,
@@ -109,17 +163,27 @@ class AgentController extends BaseController
         }
 
         $userId = session()->get('utilisateur')['id'];
-        $ticket = $this->ticketModel->find($ticketId);
+        
+        // Vérifier si l'agent est assigné à ce ticket
+        $assignation = $this->ticketAgentsModel->where([
+            'id_ticket' => $ticketId,
+            'id_agent' => $userId
+        ])->first();
 
-        if (!$ticket || $ticket['id_agent'] !== $userId) {
-            return $this->response->setJSON(['success' => false]);
+        if (!$assignation) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Vous n\'êtes pas assigné à ce ticket']);
+        }
+
+        $ticket = $this->ticketModel->find($ticketId);
+        if (!$ticket) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Ticket non trouvé']);
         }
 
         $newStatus = $this->request->getJSON()->status;
         $allowedStatuses = ['en_cours', 'resolu'];
 
         if (!in_array($newStatus, $allowedStatuses)) {
-            return $this->response->setJSON(['success' => false]);
+            return $this->response->setJSON(['success' => false, 'message' => 'Statut non autorisé']);
         }
 
         $this->ticketModel->update($ticketId, ['statut' => $newStatus]);
@@ -136,15 +200,64 @@ class AgentController extends BaseController
         $user = $this->utilisateurModel->find($userId);
         $ticket = $this->ticketModel->find($ticketId);
 
-        if (!$ticket || $ticket['id_groupe'] !== $user['id_groupe'] || $ticket['id_agent'] || $ticket['statut'] !== 'ouvert') {
-            return $this->response->setJSON(['success' => false]);
+        if (!$ticket || $ticket['id_groupe'] !== $user['id_groupe'] || $ticket['statut'] !== 'ouvert') {
+            return $this->response->setJSON(['success' => false, 'message' => 'Ticket non disponible']);
         }
 
-        $this->ticketModel->update($ticketId, [
-            'id_agent' => $userId,
-            'statut' => 'en_cours'
+        // Vérifier si l'agent n'est pas déjà assigné
+        $existingAssignment = $this->ticketAgentsModel->where([
+            'id_ticket' => $ticketId,
+            'id_agent' => $userId
+        ])->first();
+
+        if ($existingAssignment) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Vous êtes déjà assigné à ce ticket']);
+        }
+
+        // Assigner l'agent au ticket
+        $this->ticketAgentsModel->insert([
+            'id_ticket' => $ticketId,
+            'id_agent' => $userId
         ]);
+
+        // Mettre à jour le statut du ticket
+        $this->ticketModel->update($ticketId, ['statut' => 'en_cours']);
 
         return $this->response->setJSON(['success' => true]);
     }
-} 
+
+    public function removeAssignment($ticketId)
+    {
+        if (!$this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => false]);
+        }
+
+        $userId = session()->get('utilisateur')['id'];
+        
+        // Vérifier si l'agent est assigné à ce ticket
+        $assignation = $this->ticketAgentsModel->where([
+            'id_ticket' => $ticketId,
+            'id_agent' => $userId
+        ])->first();
+
+        if (!$assignation) {
+            return $this->response->setJSON(['success' => false, 'message' => 'Vous n\'êtes pas assigné à ce ticket']);
+        }
+
+        // Supprimer l'assignation
+        $this->ticketAgentsModel->where([
+            'id_ticket' => $ticketId,
+            'id_agent' => $userId
+        ])->delete();
+
+        // Vérifier s'il reste d'autres agents assignés
+        $autresAssignations = $this->ticketAgentsModel->where('id_ticket', $ticketId)->findAll();
+        
+        // Si plus aucun agent assigné, remettre le ticket en statut "ouvert"
+        if (empty($autresAssignations)) {
+            $this->ticketModel->update($ticketId, ['statut' => 'ouvert']);
+        }
+
+        return $this->response->setJSON(['success' => true]);
+    }
+}

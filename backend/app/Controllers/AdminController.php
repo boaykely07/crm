@@ -6,6 +6,10 @@ use App\Models\PrevisionsModel;
 use App\Models\RealisationModel;
 use App\Models\CRMBudgetModel;
 use App\Models\ActionsModel;
+use App\Models\TicketModel;
+use App\Models\TicketAgentsModel;
+use App\Models\UtilisateursModel;
+use App\Models\TicketCategoriesModel;
 
 class AdminController extends BaseController
 {
@@ -33,6 +37,7 @@ class AdminController extends BaseController
             'content' => view('admin/listeRealisation', $data)
         ]);
     }
+
     public function listeBudgetCRMPage()
     {
         $budgetModel = new CRMBudgetModel();
@@ -45,14 +50,31 @@ class AdminController extends BaseController
 
     public function listeTicketsPage()
     {
-        $ticketModel = new \App\Models\TicketModel();
-        $utilisateurModel = new \App\Models\UtilisateursModel();
+        $ticketModel = new TicketModel();
+        $utilisateurModel = new UtilisateursModel();
         $groupeModel = new \App\Models\GroupeModel();
+        $ticketAgentsModel = new TicketAgentsModel();
+        $categorieModel = new TicketCategoriesModel();
+
+        // Récupérer tous les tickets avec leurs détails
+        $tickets = $ticketModel->getTicketsWithDetails();
+        
+        // Pour chaque ticket, récupérer la liste des agents assignés
+        foreach ($tickets as &$ticket) {
+            $agentsAssignes = $ticketAgentsModel
+                ->select('ticket_agents.*, utilisateurs.nom as agent_nom, utilisateurs.email as agent_email')
+                ->join('utilisateurs', 'utilisateurs.id = ticket_agents.id_agent')
+                ->where('ticket_agents.id_ticket', $ticket['id'])
+                ->findAll();
+            
+            $ticket['agents_assignes'] = $agentsAssignes;
+        }
 
         $data = [
-            'tickets' => $ticketModel->getTicketsWithDetails(),
+            'tickets' => $tickets,
             'agents' => $utilisateurModel->where('role', 'agent')->findAll(),
-            'groupes' => $groupeModel->findAll()
+            'groupes' => $groupeModel->findAll(),
+            'categories' => $categorieModel->findAll()
         ];
 
         return view('admin/admin', [
@@ -61,19 +83,19 @@ class AdminController extends BaseController
     }
 
     public function listeMessageClientPage()
-    {
-        $messageClientModel = new \App\Models\MessageClientModel();
-        $data['messages'] = $messageClientModel->getMessagesWithClient();
-        return view('admin/admin', [
-            'content' => view('admin/listeMessageClient', $data)
-        ]);
-    }
+{
+    $messageClientModel = new \App\Models\MessageClientModel();
+    $data['messages'] = $messageClientModel->getMessagesWithClient();
+    return view('admin/admin', [
+        'content' => view('admin/listeMessageClient', $data)
+    ]);
+}
 
     public function detailMessageClientPage($id)
     {
         $messageModel = new \App\Models\MessageClientModel();
-        $categorieModel = new \App\Models\TicketCategoriesModel();
-        $utilisateurModel = new \App\Models\UtilisateursModel();
+        $categorieModel = new TicketCategoriesModel();
+        $utilisateurModel = new UtilisateursModel();
         $message = $messageModel
             ->select('message_client.*, clients.nom as client_nom')
             ->join('clients', 'clients.id = message_client.id_client')
@@ -86,15 +108,16 @@ class AdminController extends BaseController
 
     public function creerTicketDepuisMessage()
     {
-        $ticketModel = new \App\Models\TicketModel();
-        $previsionsModel = new \App\Models\PrevisionsModel();
+        $ticketModel = new TicketModel();
+        $previsionsModel = new PrevisionsModel();
         $detailsPrevisionModel = new \App\Models\DetailsPrevisionModel();
         $categoriesModel = new \App\Models\CategoriesModel();
         $messageModel = new \App\Models\MessageClientModel();
+        $ticketAgentsModel = new TicketAgentsModel();
 
         $id_client = $this->request->getPost('id_client');
         $id_categorie = $this->request->getPost('id_categorie');
-        $id_agent = $this->request->getPost('id_agent') ?: null;
+        $id_agents = $this->request->getPost('id_agents') ?? [];
         $priorite = $this->request->getPost('priorite');
         $THoraire = $this->request->getPost('THoraire');
         $date_heure_debut = $this->request->getPost('date_heure_debut');
@@ -149,7 +172,6 @@ class AdminController extends BaseController
             'description' => $description,
             'id_client' => $id_client,
             'id_categorie' => $id_categorie,
-            'id_agent' => $id_agent,
             'statut' => 'ouvert',
             'priorite' => $priorite,
             'THoraire' => $THoraire,
@@ -157,7 +179,19 @@ class AdminController extends BaseController
             'date_heure_fin' => $date_heure_fin,
             'fichier_url' => $fichier_url,
         ];
-        $ticketModel->insert($data);
+        $ticket_id = $ticketModel->insert($data, true);
+
+        // 5. Mettre à jour le message_client avec l'id du ticket créé
+        $messageModel->update($id_message_client, ['id_ticket' => $ticket_id]);
+
+        // 6. Ajout des agents sélectionnés dans ticket_agents
+        foreach ($id_agents as $id_agent) {
+            $ticketAgentsModel->insert([
+                'id_ticket' => $ticket_id,
+                'id_agent' => $id_agent
+            ]);
+        }
+
         return redirect()->to('/admin/tickets')->with('success', 'Ticket créé avec succès à partir du message client.');
     }
 
@@ -217,5 +251,109 @@ class AdminController extends BaseController
         $actionModel->updateStatus($BudgetSelect['id_action'], 'Terminée');
 
         return redirect()->to('/admin/listeBudgetCRM')->with('success', 'Budget CRM validé avec succès.');
+    }
+
+    public function rapportPerformancePage()
+    {
+        $ticketModel = new TicketModel();
+        $ticketAgentsModel = new TicketAgentsModel();
+        $utilisateurModel = new UtilisateursModel();
+        $categorieModel = new TicketCategoriesModel();
+
+        // Récupérer les paramètres de filtrage depuis l'URL
+        $filters = [
+            'statut' => $this->request->getGet('statut') ?: null,
+            'priorite' => $this->request->getGet('priorite') ?: null,
+            'id_categorie' => $this->request->getGet('id_categorie') ?: null,
+            'date_debut' => $this->request->getGet('date_debut') ?: null,
+            'date_fin' => $this->request->getGet('date_fin') ?: null,
+        ];
+
+        // Temps moyen de résolution (en heures)
+        $query = $ticketModel->select('AVG(TIMESTAMPDIFF(HOUR, date_ouverture, date_heure_fin)) as avg_time')
+            ->where('statut', 'ferme');
+        
+        if ($filters['priorite']) {
+            $query->where('priorite', $filters['priorite']);
+        }
+        if ($filters['id_categorie']) {
+            $query->where('id_categorie', $filters['id_categorie']);
+        }
+        if ($filters['date_debut']) {
+            $query->where('date_ouverture >=', $filters['date_debut']);
+        }
+        if ($filters['date_fin']) {
+            $query->where('date_ouverture <=', $filters['date_fin']);
+        }
+        
+        $avgResolutionTime = $query->first()['avg_time'] ?? 0;
+
+        // Satisfaction moyenne par agent
+        $satisfactionQuery = $ticketModel->select('utilisateurs.nom, utilisateurs.prenom, AVG(tickets.etoiles) as avg_satisfaction')
+            ->join('ticket_agents', 'ticket_agents.id_ticket = tickets.id')
+            ->join('utilisateurs', 'utilisateurs.id = ticket_agents.id_agent')
+            ->where('tickets.etoiles IS NOT NULL');
+        
+        if ($filters['statut']) {
+            $satisfactionQuery->where('tickets.statut', $filters['statut']);
+        }
+        if ($filters['priorite']) {
+            $satisfactionQuery->where('tickets.priorite', $filters['priorite']);
+        }
+        if ($filters['id_categorie']) {
+            $satisfactionQuery->where('tickets.id_categorie', $filters['id_categorie']);
+        }
+        if ($filters['date_debut']) {
+            $satisfactionQuery->where('tickets.date_ouverture >=', $filters['date_debut']);
+        }
+        if ($filters['date_fin']) {
+            $satisfactionQuery->where('tickets.date_ouverture <=', $filters['date_fin']);
+        }
+        
+        $satisfactionByAgent = $satisfactionQuery->groupBy('utilisateurs.id')->findAll();
+
+        // Nombre de tickets ouverts/fermés par semaine
+        $ticketsByWeekQuery = $ticketModel->select("
+            YEARWEEK(date_ouverture, 1) as week,
+            SUM(CASE WHEN statut = 'ouvert' THEN 1 ELSE 0 END) as ouverts,
+            SUM(CASE WHEN statut = 'ferme' THEN 1 ELSE 0 END) as fermes
+        ");
+        
+        if ($filters['priorite']) {
+            $ticketsByWeekQuery->where('priorite', $filters['priorite']);
+        }
+        if ($filters['id_categorie']) {
+            $ticketsByWeekQuery->where('id_categorie', $filters['id_categorie']);
+        }
+        if ($filters['date_debut']) {
+            $ticketsByWeekQuery->where('date_ouverture >=', $filters['date_debut']);
+        }
+        if ($filters['date_fin']) {
+            $ticketsByWeekQuery->where('date_ouverture <=', $filters['date_fin']);
+        } else {
+            $ticketsByWeekQuery->where('date_ouverture >=', date('Y-m-d', strtotime('-4 weeks')));
+        }
+        
+        $ticketsByWeek = $ticketsByWeekQuery->groupBy('week')->orderBy('week', 'DESC')->findAll();
+
+        // Formater les semaines pour l'affichage
+        foreach ($ticketsByWeek as &$week) {
+            $weekNumber = substr($week['week'], -2);
+            $year = substr($week['week'], 0, 4);
+            $week['week_label'] = "Semaine $weekNumber, $year";
+        }
+
+        $data = [
+            'title' => 'Rapport Performance',
+            'avg_resolution_time' => round($avgResolutionTime, 2),
+            'satisfaction_by_agent' => $satisfactionByAgent,
+            'tickets_by_week' => $ticketsByWeek,
+            'categories' => $categorieModel->findAll(),
+            'filters' => $filters
+        ];
+
+        return view('admin/admin', [
+            'content' => view('admin/rapport_performance', $data)
+        ]);
     }
 }

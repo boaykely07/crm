@@ -98,3 +98,5 @@ $routes->post('/client/ticket/etoiles/(:num)', 'ClientController::setTicketEtoil
 $routes->post('/admin/creerTicketDepuisMessage', 'AdminController::creerTicketDepuisMessage');
 
 $routes->post('agent/tickets/(:num)/status', 'TicketController::updateStatus/$1');
+// Nouvelle route pour Rapport Performance
+$routes->get('/admin/rapportPerformance', 'AdminController::rapportPerformancePage');

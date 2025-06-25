@@ -90,7 +90,20 @@ INSERT INTO categories (nom, type) VALUES
 
 
 
+CREATE TABLE ticket_agents (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    id_ticket INT NOT NULL,
+    id_agent INT NOT NULL,
+    FOREIGN KEY (id_ticket) REFERENCES tickets(id),
+    FOREIGN KEY (id_agent) REFERENCES utilisateurs(id)
+);
 
+-- Étape 1: Supprimer la contrainte de clé étrangère
+ALTER TABLE tickets DROP FOREIGN KEY tickets_ibfk_3;
+
+
+-- Étape 2: Supprimer la colonne id_agent
+ALTER TABLE tickets DROP COLUMN id_agent;
 
 ALTER TABLE clients
 ADD COLUMN mot_de_passe VARCHAR(255) NOT NULL;

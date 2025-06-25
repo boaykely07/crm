@@ -1,9 +1,9 @@
 /* Theme variables */
 :root {
-    --mint-primary: #99EDC3;
-    --mint-secondary: #7DE2AD;
-    --mint-light: #E8FFF3;
-    --mint-dark: #5BC88A;
+    --mint-primary: rgba(20, 5, 135, 0.3);
+    --mint-secondary: #102cdd;
+    --mint-light: #ebedec;
+    --mint-dark: #0a27b6;
     --white: #FFFFFF;
 }
 
@@ -113,7 +113,7 @@ body {
     background-color: var(--white);
     border-radius: 20px;
     padding: 8px 15px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 .search-container input {

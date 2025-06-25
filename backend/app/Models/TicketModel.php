@@ -10,7 +10,7 @@ class TicketModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = [
         'titre', 'description', 'id_client', 'id_categorie', 
-        'id_agent', 'id_groupe', 'statut', 'priorite', 'etoiles'
+        'id_groupe', 'statut', 'priorite', 'date_ouverture', 'THoraire', 'etoiles', 'date_heure_debut', 'date_heure_fin', 'fichier_url', 'created_at', 'updated_at'
     ];
 
     protected $validationRules = [
@@ -21,11 +21,9 @@ class TicketModel extends Model
     {
         return $this->select('tickets.*, clients.nom as client_nom, 
                             ticket_categories.nom as categorie_nom,
-                            utilisateurs.nom as agent_nom,
                             groupes.nom as groupe_nom')
                     ->join('clients', 'clients.id = tickets.id_client')
                     ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
-                    ->join('utilisateurs', 'utilisateurs.id = tickets.id_agent', 'left')
                     ->join('groupes', 'groupes.id = tickets.id_groupe', 'left')
                     ->findAll();
     }
@@ -34,11 +32,9 @@ class TicketModel extends Model
     {
         return $this->select('tickets.*, clients.nom as client_nom, 
                             ticket_categories.nom as categorie_nom,
-                            utilisateurs.nom as agent_nom,
                             groupes.nom as groupe_nom')
                     ->join('clients', 'clients.id = tickets.id_client')
                     ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
-                    ->join('utilisateurs', 'utilisateurs.id = tickets.id_agent', 'left')
                     ->join('groupes', 'groupes.id = tickets.id_groupe', 'left')
                     ->where('tickets.id', $id)
                     ->first();

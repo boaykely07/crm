@@ -77,44 +77,90 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-header">
-                    <h6 class="m-0 font-weight-bold">Derniers tickets assignés</h6>
+                    <h6 class="m-0 font-weight-bold">Mes derniers tickets assignés</h6>
                 </div>
                 <div class="card-body">
-                    <div class="table-responsive">
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>Titre</th>
-                                    <th>Client</th>
-                                    <th>Catégorie</th>
-                                    <th>Statut</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php foreach ($derniers_tickets as $ticket): ?>
-                                <tr>
-                                    <td>#<?= $ticket['id'] ?></td>
-                                    <td><?= $ticket['titre'] ?></td>
-                                    <td><?= $ticket['client_nom'] ?></td>
-                                    <td><?= $ticket['categorie_nom'] ?></td>
-                                    <td>
-                                        <span class="badge bg-<?= $ticket['statut'] === 'nouveau' ? 'danger' : 
-                                            ($ticket['statut'] === 'en_cours' ? 'warning' : 
-                                            ($ticket['statut'] === 'resolu' ? 'success' : 'secondary')) ?>">
-                                            <?= ucfirst($ticket['statut']) ?>
-                                        </span>
-                                    </td>
-                                    <td><?= date('d/m/Y H:i', strtotime($ticket['created_at'])) ?></td>
-                                </tr>
-                                <?php endforeach; ?>
-                            </tbody>
-                        </table>
-                    </div>
+                    <?php if (empty($derniers_tickets)): ?>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            Aucun ticket ne vous est actuellement assigné.
+                        </div>
+                    <?php else: ?>
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Titre</th>
+                                        <th>Client</th>
+                                        <th>Catégorie</th>
+                                        <th>Statut</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php foreach ($derniers_tickets as $ticket): ?>
+                                    <tr>
+                                        <td>#<?= $ticket['id'] ?></td>
+                                        <td><?= $ticket['titre'] ?></td>
+                                        <td><?= $ticket['client_nom'] ?></td>
+                                        <td><?= $ticket['categorie_nom'] ?></td>
+                                        <td>
+                                            <span class="badge bg-<?= $ticket['statut'] === 'ouvert' ? 'danger' : 
+                                                ($ticket['statut'] === 'en_cours' ? 'warning' : 
+                                                ($ticket['statut'] === 'resolu' ? 'success' : 'secondary')) ?>">
+                                                <?= ucfirst($ticket['statut']) ?>
+                                            </span>
+                                        </td>
+                                        <td><?= date('d/m/Y H:i', strtotime($ticket['created_at'])) ?></td>
+                                        <td>
+                                            <?php if ($ticket['statut'] === 'ouvert'): ?>
+                                                <button class="btn btn-sm btn-primary" 
+                                                        onclick="updateStatus(<?= $ticket['id'] ?>, 'en_cours')">
+                                                    Commencer
+                                                </button>
+                                            <?php elseif ($ticket['statut'] === 'en_cours'): ?>
+                                                <button class="btn btn-sm btn-success" 
+                                                        onclick="updateStatus(<?= $ticket['id'] ?>, 'resolu')">
+                                                    Résoudre
+                                                </button>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                    <?php endforeach; ?>
+                                </tbody>
+                            </table>
+                        </div>
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
-<?= $this->endSection() ?> 
+
+<script>
+function updateStatus(ticketId, newStatus) {
+    fetch(`/agent/update-ticket-status/${ticketId}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        body: JSON.stringify({ status: newStatus })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            location.reload();
+        } else {
+            alert(data.message || 'Erreur lors de la mise à jour');
+        }
+    })
+    .catch(error => {
+        console.error('Erreur:', error);
+        alert('Erreur lors de la mise à jour');
+    });
+}
+</script>
+<?= $this->endSection() ?>
