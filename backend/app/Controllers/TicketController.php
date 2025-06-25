@@ -67,7 +67,7 @@ class TicketController extends BaseController
         }
         if ($this->ticketModel->update($id, $updateData)) {
             if ($status === 'resolu') {
-                $this->sendResolutionMailToClient($ticket);
+                // $this->sendResolutionMailToClient($ticket);
             }
             return redirect()->to('/agent/mes-tickets')->with('success', 'Statut du ticket mis à jour avec succès.');
         }

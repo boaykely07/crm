@@ -3,8 +3,8 @@ INSERT INTO message_client (id_client, id_ticket, message, fichier_url) VALUES
 
 INSERT INTO ticket_categories (nom) VALUES
 ('Incident technique'),
-('Demande d’assistance'),
-('Demande d’évolution'),
+('Demande d assistance'),
+('Demande d evolution'),
 ('Demande administrative'),
 ('Demande commerciale'),
 ('Réclamation'),
