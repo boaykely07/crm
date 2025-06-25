@@ -74,7 +74,7 @@ CREATE TABLE commentaire_message (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_message_client INT,
     id_utilisateur INT,
-    auteur ENUM('client', 'agent') NOT NULL,
+    auteur ENUM('client', 'agent', 'admin') NOT NULL,
     commentaire TEXT NOT NULL,
     date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_message_client) REFERENCES message_client(id),
