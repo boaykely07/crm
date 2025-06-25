@@ -97,7 +97,7 @@ class ClientController extends Controller
         if ($commentaire) {
             $commentModel->insert([
                 'id_message_client' => $id,
-                'id_utilisateur' => session('client_id'),
+                'id_client' => session('client_id'),
                 'auteur' => 'client',
                 'commentaire' => $commentaire
             ]);

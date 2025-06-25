@@ -74,11 +74,13 @@ CREATE TABLE commentaire_message (
     id INT AUTO_INCREMENT PRIMARY KEY,
     id_message_client INT,
     id_utilisateur INT,
+    id_client INT,
     auteur ENUM('client', 'agent', 'admin') NOT NULL,
     commentaire TEXT NOT NULL,
     date_commentaire TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_message_client) REFERENCES message_client(id),
-    FOREIGN KEY (id_utilisateur) REFERENCES utilisateurs(id)
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateurs(id),
+    FOREIGN KEY (id_client) REFERENCES clients(id)
 );
 
 INSERT INTO categories (nom, type) VALUES
