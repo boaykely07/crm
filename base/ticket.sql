@@ -84,7 +84,9 @@ CREATE TABLE commentaire_message (
 INSERT INTO categories (nom, type) VALUES
   ('ticket', 'depense');
 
-
+-- drop table commentaire_message;
+-- drop table message_client;
+-- drop table tickets;
 
 
 
@@ -92,3 +94,5 @@ INSERT INTO categories (nom, type) VALUES
 
 ALTER TABLE clients
 ADD COLUMN mot_de_passe VARCHAR(255) NOT NULL;
+
+SELECT id, etoiles FROM tickets WHERE id = 11;

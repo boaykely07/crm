@@ -400,7 +400,6 @@
                 <table class="table table-messages">
                     <thead>
                         <tr>
-                            <th>ID</th>
                             <th>Message</th>
                             <th>Date</th>
                             <th>Ticket lié</th>
@@ -411,7 +410,6 @@
                         <?php if (!empty($messages)): ?>
                             <?php foreach ($messages as $msg): ?>
                                 <tr>
-                                    <td data-label="ID"><?= $msg['id'] ?></td>
                                     <td data-label="Message">
                                      
                                             <?= nl2br(htmlspecialchars($msg['message'])) ?>
@@ -427,6 +425,11 @@
                                         <?php if ($msg['id_ticket']): ?>
                                             <span class="badge-ticket">
                                                 <i class="fas fa-ticket-alt icon-ticket"></i> #<?= $msg['id_ticket'] ?>
+                                                <?php if (!empty($msg['ticket_statut'])): ?>
+                                                    <span class="badge bg-info ms-2" style="font-size:0.95em; vertical-align:middle;">
+                                                        - <?= ucfirst(str_replace('_', ' ', $msg['ticket_statut'])) ?>
+                                                    </span>
+                                                <?php endif; ?>
                                             </span>
                                         <?php else: ?>
                                             <span class="text-muted">-</span>
@@ -454,25 +457,7 @@
     </div>
 </div>
 
-<!-- Modal commentaires (dynamique) -->
-<div class="modal fade modal-comments" id="commentsModal" tabindex="-1" aria-labelledby="commentsModalLabel" aria-hidden="true">
-  <div class="modal-dialog">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="commentsModalLabel"><i class="fas fa-comments me-2"></i>Commentaires</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="comments-list" id="commentsList">
-        <!-- Les commentaires seront injectés ici en JS -->
-      </div>
-      <form id="commentForm" class="comment-input-row" autocomplete="off">
-        <input type="hidden" name="id_message_client" id="id_message_client" value="">
-        <input type="text" name="commentaire" id="commentaireInput" placeholder="Votre commentaire..." required maxlength="500">
-        <button type="submit" title="Envoyer"><i class="fas fa-paper-plane"></i></button>
-      </form>
-    </div>
-  </div>
-</div>
+
 
 <!-- Bouton flottant pour ajouter un message -->
 <button class="fab-add-message" data-bs-toggle="modal" data-bs-target="#addMessageModal" title="Nouveau message">

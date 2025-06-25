@@ -29,7 +29,7 @@ class ClientController extends Controller
         }
         $clientId = session()->get('client_id');
         $messageModel = new MessageClientModel();
-        $messages = $messageModel->where('id_client', $clientId)->orderBy('date_message', 'DESC')->findAll();
+        $messages = $messageModel->getMessagesWithTicketStatus($clientId);
         return view('client/listeMessage', ['messages' => $messages]);
     }
 
@@ -70,14 +70,20 @@ class ClientController extends Controller
         }
         $messageModel = new \App\Models\MessageClientModel();
         $commentModel = new \App\Models\CommentaireMessageModel();
+        $ticketModel = new \App\Models\TicketModel();
         $message = $messageModel->find($id);
+        $ticket = null;
+        if ($message && $message['id_ticket']) {
+            $ticket = $ticketModel->find($message['id_ticket']);
+        }
         if (!$message) {
             return redirect()->to('/client/liste-messages')->with('error', 'Message non trouvé.');
         }
         $commentaires = $commentModel->where('id_message_client', $id)->orderBy('date_commentaire', 'ASC')->findAll();
         return view('client/commentaireMessage', [
             'message' => $message,
-            'commentaires' => $commentaires
+            'commentaires' => $commentaires,
+            'ticket' => $ticket
         ]);
     }
 
@@ -98,6 +104,61 @@ class ClientController extends Controller
             return redirect()->to('/client/commentaire-message/'.$id)->with('success', 'Commentaire ajouté.');
         } else {
             return redirect()->to('/client/commentaire-message/'.$id)->with('error', 'Le commentaire ne peut pas être vide.');
+        }
+    }
+
+    public function setTicketEtoiles($id)
+    {
+        if (!session()->get('isClientLoggedIn')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'msg' => 'Non autorisé']);
+            } else {
+                return redirect()->to('/client/login');
+            }
+        }
+        $ticketModel = new \App\Models\TicketModel();
+        $ticket = $ticketModel->find($id);
+        if (!$ticket) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'msg' => 'Ticket non trouvé']);
+            } else {
+                return redirect()->back()->with('error', 'Ticket non trouvé.');
+            }
+        }
+        if ($ticket['id_client'] != session('client_id')) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'msg' => 'Non autorisé']);
+            } else {
+                return redirect()->back()->with('error', 'Non autorisé.');
+            }
+        }
+        $etoiles = null;
+        if ($this->request->isAJAX()) {
+            $data = $this->request->getJSON();
+            $etoiles = intval($data->etoiles ?? 0);
+        } else {
+            $etoiles = intval($this->request->getPost('etoiles'));
+        }
+        if ($etoiles < 1 || $etoiles > 5) {
+            if ($this->request->isAJAX()) {
+                return $this->response->setJSON(['success' => false, 'msg' => 'Note invalide']);
+            } else {
+                return redirect()->back()->with('error', 'La note doit être entre 1 et 5.');
+            }
+        }
+        //$etoiles = 2 ;
+        try {
+            if ($ticket['etoiles'] != $etoiles) {
+                $ticketModel->update($id, ['etoiles' => $etoiles]);
+            }
+        } catch (\Exception $e) {
+            // Tu peux logger ou ignorer
+        }
+
+        if ($this->request->isAJAX()) {
+            return $this->response->setJSON(['success' => true]);
+        } else {
+            return redirect()->back()->with('success', 'Votre note a bien été prise en compte.');
         }
     }
 }

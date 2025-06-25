@@ -10,7 +10,7 @@ class TicketModel extends Model
     protected $primaryKey = 'id';
     protected $allowedFields = [
         'titre', 'description', 'id_client', 'id_categorie', 
-        'id_agent', 'id_groupe', 'statut', 'priorite'
+        'id_agent', 'id_groupe', 'statut', 'priorite', 'etoiles'
     ];
 
     protected $validationRules = [

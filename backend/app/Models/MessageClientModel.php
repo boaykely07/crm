@@ -18,4 +18,13 @@ class MessageClientModel extends Model
                     ->orderBy('message_client.date_message', 'DESC')
                     ->findAll();
     }
+
+    public function getMessagesWithTicketStatus($clientId)
+    {
+        return $this->select('message_client.*, tickets.statut as ticket_statut')
+            ->join('tickets', 'tickets.id = message_client.id_ticket', 'left')
+            ->where('message_client.id_client', $clientId)
+            ->orderBy('message_client.date_message', 'DESC')
+            ->findAll();
+    }
 } 

@@ -93,6 +93,7 @@ $routes->get('/client/liste-messages', 'ClientController::listeMessages');
 $routes->post('/client/message/add', 'ClientController::addMessage');
 $routes->get('/client/commentaire-message/(:num)', 'ClientController::commentaireMessage/$1');
 $routes->post('/client/commentaire-message/(:num)', 'ClientController::addCommentaireMessage/$1');
+$routes->post('/client/ticket/etoiles/(:num)', 'ClientController::setTicketEtoiles/$1');
 
 $routes->post('/admin/creerTicketDepuisMessage', 'AdminController::creerTicketDepuisMessage');
 
