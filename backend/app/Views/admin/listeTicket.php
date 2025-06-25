@@ -35,7 +35,7 @@ $statusColors = [
                                     <th>Titre</th>
                                     <th>Client</th>
                                     <th>Catégorie</th>
-                                    <th>Agent</th>
+                                    <th>Agents assignés</th>
                                     <th>Groupe</th>
                                     <th>Priorité</th>
                                     <th>Statut</th>
@@ -52,7 +52,20 @@ $statusColors = [
                                         </td>
                                         <td><?= $ticket['client_nom'] ?></td>
                                         <td><?= $ticket['categorie_nom'] ?></td>
-                                        <td><?= $ticket['agent_nom'] ?? 'Non assigné' ?></td>
+                                        <td>
+                                            <?php if (!empty($ticket['agents_assignes'])): ?>
+                                                <?php foreach ($ticket['agents_assignes'] as $index => $agent): ?>
+                                                    <span class="badge bg-primary me-1">
+                                                        <?= $agent['agent_nom'] ?>
+                                                    </span>
+                                                    <?php if ($index < count($ticket['agents_assignes']) - 1): ?>
+                                                        <br>
+                                                    <?php endif; ?>
+                                                <?php endforeach; ?>
+                                            <?php else: ?>
+                                                <span class="text-muted">Aucun agent assigné</span>
+                                            <?php endif; ?>
+                                        </td>
                                         <td><?= $ticket['groupe_nom'] ?? 'Non assigné' ?></td>
                                         <td>
                                             <span class="badge bg-<?= $ticket['priorite'] === 'haute' ? 'danger' : ($ticket['priorite'] === 'moyenne' ? 'warning' : 'info') ?>">
@@ -85,10 +98,29 @@ $statusColors = [
                                                             
                                                             <h6>Client</h6>
                                                             <p><?= $ticket['client_nom'] ?></p>
+                                                            
+                                                            <h6>Agents assignés</h6>
+                                                            <?php if (!empty($ticket['agents_assignes'])): ?>
+                                                                <ul class="list-unstyled">
+                                                                    <?php foreach ($ticket['agents_assignes'] as $agent): ?>
+                                                                        <li>
+                                                                            <span class="badge bg-primary">
+                                                                                <?= $agent['agent_nom'] ?>
+                                                                            </span>
+                                                                            <small class="text-muted">(<?= $agent['agent_email'] ?>)</small>
+                                                                        </li>
+                                                                    <?php endforeach; ?>
+                                                                </ul>
+                                                            <?php else: ?>
+                                                                <p class="text-muted">Aucun agent assigné</p>
+                                                            <?php endif; ?>
                                                         </div>
                                                         <div class="col-md-6">
                                                             <h6>Catégorie</h6>
                                                             <p><?= $ticket['categorie_nom'] ?></p>
+                                                            
+                                                            <h6>Groupe</h6>
+                                                            <p><?= $ticket['groupe_nom'] ?? 'Non assigné' ?></p>
                                                             
                                                             <h6>Priorité</h6>
                                                             <p>
@@ -102,6 +134,15 @@ $statusColors = [
                                                                 <span class="badge bg-<?= $statusColors[$ticket['statut']] ?? 'secondary' ?>">
                                                                     <?= ucfirst(str_replace('_', ' ', $ticket['statut'])) ?>
                                                                 </span>
+                                                            </p>
+                                                            
+                                                            <h6>Horaire de travail</h6>
+                                                            <p><?= $ticket['THoraire'] ?> h</p>
+                                                            
+                                                            <h6>Période</h6>
+                                                            <p>
+                                                                Du <?= date('d/m/Y H:i', strtotime($ticket['date_heure_debut'])) ?><br>
+                                                                Au <?= date('d/m/Y H:i', strtotime($ticket['date_heure_fin'])) ?>
                                                             </p>
                                                         </div>
                                                     </div>

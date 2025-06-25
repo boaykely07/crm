@@ -199,9 +199,8 @@
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label for="id_agent" class="form-label">Agent assigné</label>
-                        <select class="form-select" id="id_agent" name="id_agent">
-                            <option value="">Aucun (gestion par groupe ou à assigner plus tard)</option>
+                        <label for="id_agents" class="form-label">Agents assignés</label>
+                        <select class="form-select" id="id_agents" name="id_agents[]" multiple required>
                             <?php if (isset($agents) && is_array($agents)): ?>
                                 <?php foreach ($agents as $agent): ?>
                                     <option value="<?= $agent['id'] ?>">
@@ -210,6 +209,7 @@
                                 <?php endforeach; ?>
                             <?php endif; ?>
                         </select>
+                        <small class="form-text text-muted">Maintenez Ctrl (Windows) ou Cmd (Mac) pour sélectionner plusieurs agents.</small>
                     </div>
                     <div class="mb-3">
                         <label for="priorite" class="form-label">Priorité</label>

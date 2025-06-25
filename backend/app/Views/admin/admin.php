@@ -12,12 +12,12 @@
         body { 
             min-height: 100vh; 
             overflow-x: hidden;
-            background-color: #E8FFF3;
+            background-color: #ebedec;
         }
         .sidebar {
             min-width: 250px;
             max-width: 250px;
-            background: #99EDC3;
+            background: rgba(20, 5, 135, 0.3);
             color: #2C3E50;
             transition: all 0.3s;
             height: 100vh;
@@ -34,7 +34,7 @@
             margin: 5px 10px;
         }
         .sidebar a.active, .sidebar a:hover {
-            background: #7DE2AD;
+            background: rgb(26, 8, 166);;
             color: #fff;
         }
         .content {
@@ -47,7 +47,7 @@
             padding: 25px;
             text-align: center;
             border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            background-color: #7DE2AD;
+            background-color: rgb(26, 8, 166);
             color: #fff;
         }
         .nav-item {
@@ -112,29 +112,34 @@
                 </div>
                 <ul class="nav flex-column mt-3">
                     <li class="nav-item">
-                        <a href="<?= site_url('/admin/listePrevisions') ?>" class="active">
+                        <a href="<?= site_url('/admin/listePrevisions') ?>" >
                             <i class="fas fa-tachometer-alt me-2"></i> Listes des previsions
                         </a>
                     </li>
                     <li class="nav-item">
-                    <a href="<?= site_url('/admin/listeRealisations') ?>" class="active">
+                    <a href="<?= site_url('/admin/listeRealisations') ?>" >
                             <i class="fas fa-tachometer-alt me-2"></i> Listes realisations
                         </a>
                     </li>
                     <li class="nav-item">
-                    <a href="<?= site_url('/admin/listeBudgetCRM') ?>" class="active">
+                    <a href="<?= site_url('/admin/listeBudgetCRM') ?>" >
                             <i class="fas fa-tachometer-alt me-2"></i> Listes Budget CRM
                         </a>
                     </li>
                     
                     <li class="nav-item">
-                        <a href="<?= site_url('/admin/tickets') ?>" class="active">
+                        <a href="<?= site_url('/admin/tickets') ?>" >
                             <i class="fas fa-ticket-alt me-2"></i> Gestion des Tickets
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="<?= site_url('/admin/listeMessageClient') ?>">
+                        <a href="<?= site_url('/admin/listeMessageClient')  ?>" >
                             <i class="fas fa-envelope me-2"></i> Messages Clients
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="<?= site_url('/admin/rapportPerformance') ?>">
+                            <i class="fas fa-chart-bar me-2"></i> Rapport Performance
                         </a>
                     </li>
                     <form method="post" action="<?= site_url('auth/logout') ?>" class="mt-auto">
