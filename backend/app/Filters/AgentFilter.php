@@ -10,17 +10,23 @@ class AgentFilter implements FilterInterface
 {
     public function before(RequestInterface $request, $arguments = null)
     {
-        if (!session()->get('isLoggedIn')) {
+        // Déboguer la session
+        log_message('debug', 'Session utilisateur : ' . print_r(session()->get('utilisateur'), true));
+        
+        if (!session()->get('utilisateur')) {
+            log_message('debug', 'Aucune session utilisateur trouvée');
             return redirect()->to('/login');
         }
 
-        if (session()->get('role') !== 'agent') {
-            return redirect()->to('/dashboard')->with('error', 'Accès non autorisé. Vous devez être un agent.');
+        $user = session()->get('utilisateur');
+        if ($user['role'] !== 'agent') {
+            log_message('debug', 'Role incorrect : ' . $user['role']);
+            return redirect()->to('/login')->with('error', 'Accès réservé aux agents');
         }
     }
 
     public function after(RequestInterface $request, ResponseInterface $response, $arguments = null)
     {
-        // Do nothing
+        // Nothing to do here
     }
-} 
+}

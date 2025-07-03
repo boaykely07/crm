@@ -28,6 +28,7 @@
                                 <th style="min-width: 180px;">Catégorie</th>
                                 <th style="min-width: 140px;">Statut</th>
                                 <th style="min-width: 180px;">Date</th>
+                                <th style="min-width: 140px;">Commentaires</th>
                                 <th style="min-width: 240px;">Actions</th>
                             </tr>
                         </thead>
@@ -47,6 +48,13 @@
                                     </span>
                                 </td>
                                 <td><?= date('d/m/Y H:i', strtotime($ticket['created_at'])) ?></td>
+                                <td>
+                                    <a href="<?= base_url('agent/message/' . $ticket['id_message']) ?>" 
+                                       class="btn btn-info btn-sm">
+                                        <i class="fas fa-comments"></i> 
+                                        Voir les commentaires
+                                    </a>
+                                </td>
                                 <td>
                                     <div class="d-flex gap-2 flex-wrap">
                                         <form method="post" action="<?= site_url('agent/tickets/' . $ticket['id'] . '/status') ?>">

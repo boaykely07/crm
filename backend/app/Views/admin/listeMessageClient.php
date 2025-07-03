@@ -47,7 +47,7 @@
                                             <td class="px-4 py-3"><?= date('d/m/Y H:i', strtotime($msg['date_message'])) ?></td>
                                             <td class="px-4 py-3">
                                                 <?php if ($msg['id_ticket']): ?>
-                                                    <a style ="color:#0000" href="<?= site_url('/admin/tickets') ?>#ticket<?= esc($msg['id_ticket'], 'attr') ?>" class="text-white text-decoration-underline">
+                                                    <a style ="color:#FFFFFF" href="<?= site_url('/admin/tickets') ?>#ticket<?= esc($msg['id_ticket'], 'attr') ?>" class="text-white text-decoration-underline">
                                                         Ticket #<?= esc($msg['id_ticket']) ?>
                                                     </a>
                                                 <?php else: ?>

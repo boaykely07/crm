@@ -55,10 +55,69 @@ class AdminController extends BaseController
         $groupeModel = new \App\Models\GroupeModel();
         $ticketAgentsModel = new TicketAgentsModel();
         $categorieModel = new TicketCategoriesModel();
+        $messageModel = new \App\Models\MessageClientModel();
 
-        // Récupérer tous les tickets avec leurs détails
-        $tickets = $ticketModel->getTicketsWithDetails();
-        
+        // Récupérer les filtres
+        $motCle = $this->request->getGet('mot_cle');
+        $filtreStatut = $this->request->getGet('statut');
+        $filtrePriorite = $this->request->getGet('priorite');
+        $filtreCategorie = $this->request->getGet('categorie');
+
+        // Construction de la requête
+        $ticketsQuery = $ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom, groupes.nom as groupe_nom')
+            ->join('clients', 'clients.id = tickets.id_client')
+            ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
+            ->join('groupes', 'groupes.id = tickets.id_groupe', 'left');
+
+        if ($motCle) {
+            $ticketsQuery->groupStart()
+                ->like('tickets.titre', $motCle)
+                ->orLike('tickets.description', $motCle)
+                ->orLike('clients.nom', $motCle)
+                ->groupEnd();
+        }
+        if ($filtreStatut) {
+            $ticketsQuery->where('tickets.statut', $filtreStatut);
+        }
+        if ($filtrePriorite) {
+            $ticketsQuery->where('tickets.priorite', $filtrePriorite);
+        }
+        if ($filtreCategorie) {
+            $ticketsQuery->where('ticket_categories.nom', $filtreCategorie);
+        }
+
+        $tickets = $ticketsQuery->findAll();
+
+        // Si mot-clé, filtrer aussi sur les messages associés
+        if ($motCle) {
+            $messageTickets = $messageModel
+                ->select('id_ticket')
+                ->like('message', $motCle)
+                ->findAll();
+            $idsTicketsMessages = array_unique(array_column($messageTickets, 'id_ticket'));
+            $idsTickets = array_unique(array_merge(array_column($tickets, 'id'), $idsTicketsMessages));
+            // Recharger tous les tickets correspondant à ces IDs (avec les autres filtres)
+            if (!empty($idsTickets)) {
+                $tickets = $ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom, groupes.nom as groupe_nom')
+                    ->join('clients', 'clients.id = tickets.id_client')
+                    ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
+                    ->join('groupes', 'groupes.id = tickets.id_groupe', 'left')
+                    ->whereIn('tickets.id', $idsTickets);
+                if ($filtreStatut) {
+                    $tickets->where('tickets.statut', $filtreStatut);
+                }
+                if ($filtrePriorite) {
+                    $tickets->where('tickets.priorite', $filtrePriorite);
+                }
+                if ($filtreCategorie) {
+                    $tickets->where('ticket_categories.nom', $filtreCategorie);
+                }
+                $tickets = $tickets->findAll();
+            } else {
+                $tickets = [];
+            }
+        }
+
         // Pour chaque ticket, récupérer la liste des agents assignés
         foreach ($tickets as &$ticket) {
             $agentsAssignes = $ticketAgentsModel
@@ -66,15 +125,24 @@ class AdminController extends BaseController
                 ->join('utilisateurs', 'utilisateurs.id = ticket_agents.id_agent')
                 ->where('ticket_agents.id_ticket', $ticket['id'])
                 ->findAll();
-            
             $ticket['agents_assignes'] = $agentsAssignes;
+        }
+
+        // Récupérer les messages pour chaque ticket
+        $messagesParTicket = [];
+        foreach ($tickets as $ticket) {
+            $messagesParTicket[$ticket['id']] = $messageModel
+                ->where('id_ticket', $ticket['id'])
+                ->orderBy('date_message', 'ASC')
+                ->findAll();
         }
 
         $data = [
             'tickets' => $tickets,
             'agents' => $utilisateurModel->where('role', 'agent')->findAll(),
             'groupes' => $groupeModel->findAll(),
-            'categories' => $categorieModel->findAll()
+            'categories' => $categorieModel->findAll(),
+            'messagesParTicket' => $messagesParTicket
         ];
 
         return view('admin/admin', [

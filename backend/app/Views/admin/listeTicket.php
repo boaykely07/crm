@@ -31,31 +31,32 @@ $statusColors = [
                     <?php endif; ?>
 
                     <!-- Filtres -->
-                    <div class="d-flex flex-wrap gap-3 mb-4">
+                    <form method="get" class="d-flex flex-wrap gap-3 mb-4">
                         <div class="input-group" style="max-width: 300px;">
                             <span class="input-group-text bg-primary text-white"><i class="fas fa-search"></i></span>
-                            <input type="text" id="searchInput" class="form-control" placeholder="Rechercher par titre ou client..." aria-label="Rechercher">
+                            <input type="text" id="searchInput" name="mot_cle" class="form-control" placeholder="Rechercher par mot-clé..." value="<?= esc($_GET['mot_cle'] ?? '') ?>">
                         </div>
-                        <select id="statusFilter" class="form-select" style="max-width: 200px;">
+                        <select id="statusFilter" name="statut" class="form-select" style="max-width: 200px;">
                             <option value="">Tous les statuts</option>
-                            <option value="ouvert">Ouvert</option>
-                            <option value="en_cours">En cours</option>
-                            <option value="resolu">Résolu</option>
-                            <option value="ferme">Fermé</option>
+                            <option value="ouvert" <?= (isset($_GET['statut']) && $_GET['statut'] == 'ouvert') ? 'selected' : '' ?>>Ouvert</option>
+                            <option value="en_cours" <?= (isset($_GET['statut']) && $_GET['statut'] == 'en_cours') ? 'selected' : '' ?>>En cours</option>
+                            <option value="resolu" <?= (isset($_GET['statut']) && $_GET['statut'] == 'resolu') ? 'selected' : '' ?>>Résolu</option>
+                            <option value="ferme" <?= (isset($_GET['statut']) && $_GET['statut'] == 'ferme') ? 'selected' : '' ?>>Fermé</option>
                         </select>
-                        <select id="priorityFilter" class="form-select" style="max-width: 200px;">
+                        <select id="priorityFilter" name="priorite" class="form-select" style="max-width: 200px;">
                             <option value="">Toutes les priorités</option>
-                            <option value="basse">Basse</option>
-                            <option value="moyenne">Moyenne</option>
-                            <option value="haute">Haute</option>
+                            <option value="basse" <?= (isset($_GET['priorite']) && $_GET['priorite'] == 'basse') ? 'selected' : '' ?>>Basse</option>
+                            <option value="moyenne" <?= (isset($_GET['priorite']) && $_GET['priorite'] == 'moyenne') ? 'selected' : '' ?>>Moyenne</option>
+                            <option value="haute" <?= (isset($_GET['priorite']) && $_GET['priorite'] == 'haute') ? 'selected' : '' ?>>Haute</option>
                         </select>
-                        <select id="categoryFilter" class="form-select" style="max-width: 200px;">
+                        <select id="categoryFilter" name="categorie" class="form-select" style="max-width: 200px;">
                             <option value="">Toutes les catégories</option>
                             <?php foreach ($categories as $category): ?>
-                                <option value="<?= esc($category['nom']) ?>"><?= esc($category['nom']) ?></option>
+                                <option value="<?= esc($category['nom']) ?>" <?= (isset($_GET['categorie']) && $_GET['categorie'] == $category['nom']) ? 'selected' : '' ?>><?= esc($category['nom']) ?></option>
                             <?php endforeach; ?>
                         </select>
-                    </div>
+                        <button type="submit" class="btn btn-primary">Filtrer</button>
+                    </form>
 
                     <!-- Tableau des tickets -->
                     <div class="table-responsive">
@@ -126,6 +127,23 @@ $statusColors = [
                                                             
                                                             <h6>Description</h6>
                                                             <p><?= esc($ticket['description']) ?></p>
+
+                                                            <!-- Affichage des messages du ticket -->
+                                                            <h6>Messages</h6>
+                                                            <?php if (!empty($messagesParTicket[$ticket['id']])): ?>
+                                                                <ul class="list-group mb-3">
+                                                                    <?php foreach ($messagesParTicket[$ticket['id']] as $msg): ?>
+                                                                        <li class="list-group-item">
+                                                                            <strong><?= esc($msg['client_nom'] ?? 'Client') ?>:</strong>
+                                                                            <?= esc($msg['message']) ?>
+                                                                            <br>
+                                                                            <small class="text-muted"><?= date('d/m/Y H:i', strtotime($msg['date_message'])) ?></small>
+                                                                        </li>
+                                                                    <?php endforeach; ?>
+                                                                </ul>
+                                                            <?php else: ?>
+                                                                <p class="text-muted">Aucun message pour ce ticket.</p>
+                                                            <?php endif; ?>
                                                             
                                                             <h6>Client</h6>
                                                             <p><?= esc($ticket['client_nom']) ?></p>

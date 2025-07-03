@@ -86,12 +86,15 @@ class AgentController extends BaseController
         
         $tickets = [];
         if (!empty($ticketIds)) {
-            $tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, ticket_categories.nom as categorie_nom')
-                                       ->join('clients', 'clients.id = tickets.id_client')
-                                       ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
-                                       ->whereIn('tickets.id', $ticketIds)
-                                       ->orderBy('tickets.created_at', 'DESC')
-                                       ->findAll();
+            $tickets = $this->ticketModel->select('tickets.*, clients.nom as client_nom, 
+                                                 ticket_categories.nom as categorie_nom,
+                                                 message_client.id as id_message')
+                                           ->join('clients', 'clients.id = tickets.id_client')
+                                           ->join('ticket_categories', 'ticket_categories.id = tickets.id_categorie')
+                                           ->join('message_client', 'message_client.id_ticket = tickets.id', 'left')
+                                           ->whereIn('tickets.id', $ticketIds)
+                                           ->orderBy('tickets.created_at', 'DESC')
+                                           ->findAll();
             
             // Ajouter les informations des autres agents assignés pour chaque ticket
             foreach ($tickets as &$ticket) {
@@ -259,5 +262,62 @@ class AgentController extends BaseController
         }
 
         return $this->response->setJSON(['success' => true]);
+    }
+
+    public function viewMessage($id)
+    {
+        $messageModel = new \App\Models\MessageClientModel();
+        $commentaireModel = new \App\Models\CommentaireMessageModel();
+        $ticketModel = new \App\Models\TicketModel();
+
+        // Récupérer le message avec les informations du client
+        $message = $messageModel
+            ->select('message_client.*, clients.nom as client_nom')
+            ->join('clients', 'clients.id = message_client.id_client')
+            ->where('message_client.id', $id)
+            ->first();
+
+        if (!$message) {
+            return redirect()->back()->with('error', 'Message non trouvé');
+        }
+
+        // Récupérer le ticket associé si existe
+        $ticket = null;
+        if ($message['id_ticket']) {
+            $ticket = $ticketModel->find($message['id_ticket']);
+        }
+
+        // Récupérer les commentaires avec les informations des auteurs
+        $commentaires = $commentaireModel
+            ->select('commentaire_message.*, clients.nom as nom_client, utilisateurs.nom as nom_agent')
+            ->join('clients', 'clients.id = commentaire_message.id_client', 'left')
+            ->join('utilisateurs', 'utilisateurs.id = commentaire_message.id_utilisateur', 'left')
+            ->where('commentaire_message.id_message_client', $id)
+            ->orderBy('date_commentaire', 'ASC')
+            ->findAll();
+
+        return view('agent/message', [
+            'message' => $message,
+            'ticket' => $ticket,
+            'commentaires' => $commentaires
+        ]);
+    }
+
+    public function addMessageComment($id)
+    {
+        $commentaireModel = new \App\Models\CommentaireMessageModel();
+        
+        $data = [
+            'id_message_client' => $id,
+            'id_utilisateur' => session()->get('id'),
+            'auteur' => 'agent',
+            'commentaire' => $this->request->getPost('commentaire')
+        ];
+
+        if ($commentaireModel->insert($data)) {
+            return redirect()->back()->with('success', 'Commentaire ajouté avec succès');
+        }
+
+        return redirect()->back()->with('error', 'Erreur lors de l\'ajout du commentaire');
     }
 }
